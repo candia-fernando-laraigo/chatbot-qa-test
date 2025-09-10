@@ -17,6 +17,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.remote.webdriver import WebDriver
 from pytest_html import extras
 
 # Add parent directory to path for imports
@@ -45,7 +46,7 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "responses: mark a test as a response validation test"
     )
-    
+
     # Add custom CSS via environment variable which pytest-html will pick up
     css = """
     .test-data { margin: 15px 0; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f8f8f8; }
@@ -74,7 +75,7 @@ def driver(request):
 
 
 @pytest.fixture
-def wait(driver):
+def wait(driver: WebDriver):
     """Fixture for WebDriverWait."""
     return WebDriverWait(driver, EXPLICIT_WAIT)
 
@@ -82,11 +83,14 @@ def wait(driver):
 # Storage for test data
 TEST_DATA = {}
 
+
 @pytest.fixture(scope="function")
-def chatbot_page(driver):
+def chatbot_page(driver: WebDriver):
     """Fixture for ChatbotPage."""
     from pages.chatbot_page import ChatbotPage
+
     return ChatbotPage(driver)
+
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item, nextitem):
@@ -98,9 +102,10 @@ def pytest_runtest_protocol(item, nextitem):
         "response_text": None,
         "error": None,
         "screenshot": None,
-        "duration": None
+        "duration": None,
     }
     yield
+
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
@@ -108,71 +113,94 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
     test_id = item.nodeid
-    
+
     # For parametrized tests, get the parameter value
-    if hasattr(item, 'callspec'):
+    if hasattr(item, "callspec"):
         param_values = item.callspec.params.values()
         if param_values:
             param_str = next(iter(param_values))
             if isinstance(param_str, str):
-                TEST_DATA[test_id]['sent_message'] = param_str
-    
+                TEST_DATA[test_id]["sent_message"] = param_str
+
     # Store end time and calculate duration
     if test_id in TEST_DATA:
         if report.when == "call":
-            TEST_DATA[test_id]['duration'] = time.time() - TEST_DATA[test_id]['start_time']
-        
+            TEST_DATA[test_id]["duration"] = (
+                time.time() - TEST_DATA[test_id]["start_time"]
+            )
+
             # If the test has a chatbot_page fixture and it was accessed, try to get messages
-            if hasattr(item, 'funcargs'):
+            if hasattr(item, "funcargs"):
                 # Get messages from the chatbot page if available
-                if 'chatbot_page' in item.funcargs:
-                    chatbot_page = item.funcargs['chatbot_page']
-                    if hasattr(chatbot_page, 'get_all_bot_messages') and hasattr(chatbot_page, 'get_all_user_messages'):
+                if "chatbot_page" in item.funcargs:
+                    chatbot_page = item.funcargs["chatbot_page"]
+                    if hasattr(chatbot_page, "get_all_bot_messages") and hasattr(
+                        chatbot_page, "get_all_user_messages"
+                    ):
                         try:
                             bot_messages = chatbot_page.get_all_bot_messages()
                             user_messages = chatbot_page.get_all_user_messages()
                             if bot_messages:
-                                TEST_DATA[test_id]['response_text'] = bot_messages[-1]
-                            if user_messages and not TEST_DATA[test_id]['sent_message']:
-                                TEST_DATA[test_id]['sent_message'] = user_messages[-1]
+                                TEST_DATA[test_id]["response_text"] = bot_messages[-1]
+                            if user_messages and not TEST_DATA[test_id]["sent_message"]:
+                                TEST_DATA[test_id]["sent_message"] = user_messages[-1]
                         except Exception as e:
-                            TEST_DATA[test_id]['error'] = f"Error getting messages: {str(e)}"
-    
+                            TEST_DATA[test_id][
+                                "error"
+                            ] = f"Error getting messages: {str(e)}"
+
     if report.when == "call" and report.failed:
         driver = item.funcargs.get("driver", None)
         if driver and TAKE_SCREENSHOT_ON_FAILURE:
             screenshot_name = f"failure_{item.name}"
             screenshot_path = take_screenshot(driver, screenshot_name)
-            
-            # Store screenshot info
-            if test_id in TEST_DATA:
-                TEST_DATA[test_id]['screenshot'] = screenshot_path
-                TEST_DATA[test_id]['error'] = report.longrepr.reprcrash.message if hasattr(report, 'longrepr') and hasattr(report.longrepr, 'reprcrash') else "Test failed"
-                
+            if screenshot_path and test_id in TEST_DATA:
+                TEST_DATA[test_id]["screenshot"] = screenshot_path
+                TEST_DATA[test_id]["error"] = (
+                    report.longrepr.reprcrash.message
+                    if hasattr(report, "longrepr")
+                    and hasattr(report.longrepr, "reprcrash")
+                    else "Test failed"
+                )
+
                 # Add the screenshot to the HTML report
                 try:
                     with open(screenshot_path, "rb") as img_file:
-                        screenshot_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-                    report.extra = [extras.html(f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></div>'),
-                                  extras.image(screenshot_base64, screenshot_name)]    
+                        screenshot_base64 = base64.b64encode(img_file.read()).decode(
+                            "utf-8"
+                        )
+                    report.extra = [
+                        extras.html(
+                            f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></div>'
+                        ),
+                        extras.image(screenshot_base64, screenshot_name),
+                    ]
                 except Exception as e:
-                    report.extra = [extras.html(f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre><p>Error loading screenshot: {str(e)}</p></div>')]
-            
+                    report.extra = [
+                        extras.html(
+                            f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre><p>Error loading screenshot: {str(e)}</p></div>'
+                        )
+                    ]
+
     # Add test data to the report for passed tests too
     if report.when == "call" and report.passed and test_id in TEST_DATA:
-        report.extra = [extras.html(f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></div>')]
+        report.extra = [
+            extras.html(
+                f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></div>'
+            )
+        ]
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     """Add test data summary to HTML report."""
     yield
-    
+
     # Create a summary JSON file with all test data
-    if config.getoption('htmlpath'):
-        html_path = config.getoption('htmlpath')
-        json_path = html_path.replace('.html', '_test_data.json')
-        
+    if config.getoption("htmlpath"):
+        html_path = config.getoption("htmlpath")
+        json_path = html_path.replace(".html", "_test_data.json")
+
         # Prepare a clean version of test data for JSON output
         summary_data = {}
         for test_id, data in TEST_DATA.items():
@@ -183,21 +211,25 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "response_text": data.get("response_text", None),
                 "duration": round(data.get("duration", 0), 2),
                 "error": data.get("error", None),
-                "screenshot": os.path.basename(data.get("screenshot", "")) if data.get("screenshot") else None,
-                "status": "failed" if data.get("error") else "passed"
+                "screenshot": (
+                    os.path.basename(data.get("screenshot", ""))
+                    if data.get("screenshot")
+                    else None
+                ),
+                "status": "failed" if data.get("error") else "passed",
             }
             summary_data[test_id] = clean_data
-        
+
         try:
-            with open(json_path, 'w') as f:
+            with open(json_path, "w") as f:
                 json.dump(summary_data, f, indent=2)
             print(f"\nTest data summary written to: {json_path}")
-            
+
             # Add the summary to the HTML report
             if os.path.exists(html_path):
-                with open(html_path, 'r', encoding='utf-8') as f:
+                with open(html_path, "r", encoding="utf-8") as f:
                     html_content = f.read()
-                
+
                 # Create a summary div at the end of the body
                 summary_div = f"""
                 <div id="test-data-summary" style="margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
@@ -208,11 +240,13 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                     </details>
                 </div>
                 """
-                
+
                 # Insert before the closing body tag
-                html_content = html_content.replace('</body>', f'{summary_div}\n</body>')
-                
-                with open(html_path, 'w', encoding='utf-8') as f:
+                html_content = html_content.replace(
+                    "</body>", f"{summary_div}\n</body>"
+                )
+
+                with open(html_path, "w", encoding="utf-8") as f:
                     f.write(html_content)
         except Exception as e:
             print(f"Error creating test data summary: {e}")

@@ -77,21 +77,6 @@ make test-ui          # UI tests only
 make test-responses   # Response tests only
 ```
 
-Run tests in parallel:
-```bash
-make test-parallel
-```
-
-Run tests directly with pytest:
-```bash
-make pytest
-```
-
-View HTML report:
-```bash
-make report
-```
-
 Clean up:
 ```bash
 make clean
@@ -121,7 +106,6 @@ Run tests directly with pytest:
 pytest                           # Run all tests
 pytest -v                        # Verbose output
 pytest -m ui                     # Run UI tests only
-pytest -m messages               # Run message tests only
 pytest -m responses              # Run response tests only
 pytest -n 3                      # Run in parallel with 3 workers
 pytest --html=report.html        # Generate HTML report
@@ -142,6 +126,5 @@ You can customize test execution by modifying the `config/config.py` file or by 
 ## Adding New Tests
 
 1. Create a new test file in the appropriate directory under `tests/`
-2. Extend the `BaseTest` class from `utils/base_test.py`
-3. Use the Page Object Model from `pages/chatbot_page.py`
-4. Run your tests using the main test runner
+2. Use the Page Object Model from `pages/chatbot_page.py`
+3. Run your tests using the main test runner
