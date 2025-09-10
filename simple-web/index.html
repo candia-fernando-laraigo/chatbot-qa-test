@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página para Pruebas con Selenium</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Mi Página con Chatbot de Prueba</h1>
+    <p>
+      Interactúa con nuestro asistente virtual haciendo clic en la burbuja del
+      chat.
+    </p>
+
+    <button id="chat-toggle-button">💬</button>
+
+    <div id="chat-panel" class="hidden">
+      <div id="chat-header">Asistente Virtual</div>
+      <div id="chat-display">
+        <div class="bot-message">
+          👋 ¡Hola! Soy el asistente virtual de la empresa. Estoy aquí para
+          resolver tus dudas sobre nuestros productos, servicios, precios o
+          cualquier otra consulta que tengas.
+        </div>
+      </div>
+      <div id="chat-input-area">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Escribe tu mensaje..."
+        />
+        <button id="send-button">Enviar</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

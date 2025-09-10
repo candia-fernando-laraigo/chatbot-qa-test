@@ -1,0 +1,121 @@
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+  margin: 0;
+}
+
+#chat-toggle-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+#chat-toggle-button:hover {
+  transform: scale(1.1);
+  background-color: #0070db;
+}
+
+/* El panel del chat */
+#chat-panel {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 350px;
+  height: 450px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+/* Oculta el panel por defecto */
+.hidden {
+  display: none;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+#chat-header {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* El área de los mensajes */
+#chat-display {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto; /* Para que aparezca scroll si hay muchos mensajes */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-message,
+.bot-message {
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 75%;
+  word-wrap: break-word;
+}
+
+.user-message {
+  background-color: #e1e1e1;
+  align-self: flex-end; /* Mensajes del usuario a la derecha */
+}
+
+.bot-message {
+  background-color: #d1e7fd;
+  align-self: flex-start; /* Mensajes del bot a la izquierda */
+}
+
+/* El área para escribir */
+#chat-input-area {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+
+#chat-input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+}
+
+#send-button {
+  margin-left: 10px;
+  padding: 8px 15px;
+  cursor: pointer;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
