@@ -27,9 +27,6 @@ test-ui: setup
 test-responses: setup
 	@$(VENV)/bin/python main.py --suite responses
 
-test-parallel: setup
-	@$(VENV)/bin/python main.py --parallel 3
-
 # Clean up
 clean:
 	@echo "Cleaning up..."

@@ -10,7 +10,7 @@ from datetime import datetime
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from config.config import PARALLEL_EXECUTION, SCREENSHOT_DIR
+from config.config import PYTEST_WORKERS, SCREENSHOT_DIR
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     parser.add_argument(
         "--parallel",
         type=int,
-        default=PARALLEL_EXECUTION,
+        default=PYTEST_WORKERS,
         help="Number of parallel executions",
     )
     parser.add_argument(
