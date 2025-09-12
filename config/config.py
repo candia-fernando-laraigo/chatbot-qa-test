@@ -13,9 +13,9 @@ BROWSER_TYPE = 'chrome'  # Options: chrome, firefox, edge
 HEADLESS = True  # Set to False for debugging visual issues
 
 # Test execution configuration
-PARALLEL_EXECUTION = 1  # Number of parallel test executions
-IMPLICIT_WAIT = 10  # Default wait time in seconds
-EXPLICIT_WAIT = 10  # Default explicit wait time in seconds
+PARALLEL_EXECUTION = 10  # Number of parallel test executions
+IMPLICIT_WAIT = 60  # Default wait time in seconds
+EXPLICIT_WAIT = 60  # Default explicit wait time in seconds
 
 # Test data
 TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), '../test_data')

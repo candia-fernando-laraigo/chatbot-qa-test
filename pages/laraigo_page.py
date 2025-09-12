@@ -43,16 +43,19 @@ class LaraigoPage:
     ATTACHMENT_LOCATION = (By.ID, "input-location-button")
     CHAT_IDLE_MESSAGE = (By.ID, "chat-idle-message")
 
-    def __init__(self, driver: WebDriver, timeout: int = 20):
+    def __init__(self, driver: WebDriver, timeout: int = 60):
         """Inicializar la página con el WebDriver proporcionado y un timeout personalizable."""
         self.driver: WebDriver = driver
         self.wait: WebDriverWait = WebDriverWait(driver, timeout)
         self.timeout = timeout
+        
+        try:
+            self.driver.get("https://demos.laraigo.com/QAOmar/Automatizacion.html")
+        except WebDriverException as e:
+            raise WebDriverException(f"No se pudo cargar la página: {e}")
+        except Exception as e:
+            raise Exception(f"Error inesperado al cargar la página: {e}")
 
-    def load_page(self, url: str) -> "LaraigoPage":
-        """Cargar la página del chatbot."""
-        self.driver.get(url)
-        return self
 
     def wait_for_page_load(self) -> "LaraigoPage":
         """Esperar a que la página cargue completamente."""
@@ -181,15 +184,16 @@ class LaraigoPage:
         except NoSuchElementException:
             raise NoSuchElementException("No se encontró el campo de entrada del chat.")
 
-    def wait_for_bot_response(self, timeout: Optional[int] = None) -> str:
+    def wait_for_bot_response(self, timeout: Optional[int] = None, extra_wait: float = 1.0) -> List[str]:
         """
-        Esperar a que el bot responda y devolver el texto de la respuesta.
+        Esperar a que el bot responda y devolver los textos de todas las respuestas nuevas.
 
         Args:
             timeout: Tiempo máximo de espera en segundos (si es None, usa el timeout predeterminado)
+            extra_wait: Tiempo adicional de espera en segundos para capturar múltiples respuestas
 
         Returns:
-            El texto de la respuesta del bot
+            Lista con los textos de las nuevas respuestas del bot
         """
         wait_time = timeout if timeout is not None else self.timeout
 
@@ -200,10 +204,23 @@ class LaraigoPage:
 
             # Esperar a que aparezca un nuevo mensaje del bot
             self.wait.until(lambda _: len(self.get_all_bot_messages()) > current_count)
-
-            # Obtener el último mensaje del bot
-            last_bot_message = self.driver.find_element(*self.LAST_BOT_MESSAGE)
-            return last_bot_message.text
+            
+            # Esperar un poco más para capturar posibles mensajes adicionales
+            if extra_wait > 0:
+                time.sleep(extra_wait)
+            
+            # Obtener todos los mensajes nuevos del bot
+            all_bot_messages = self.get_all_bot_messages()
+            new_messages = all_bot_messages[current_count:]
+            new_messages_text = [message.text for message in new_messages]
+            
+            # Si no hay mensajes nuevos (muy improbable pero por si acaso)
+            if not new_messages_text:
+                # Obtener el último mensaje como fallback
+                last_bot_message = self.driver.find_element(*self.LAST_BOT_MESSAGE)
+                return [last_bot_message.text]
+                
+            return new_messages_text
 
         except TimeoutException:
             raise TimeoutException(
