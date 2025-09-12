@@ -1,0 +1,182 @@
+{
+  "tests/test_chatbot_responses.py::test_greeting_responses[Hola]": {
+    "name": "test_greeting_responses[Hola]",
+    "sent_message": "Hola",
+    "response_text": "\u00a1Hola! \ud83d\udc4b \u00bfEn qu\u00e9 puedo ayudarte hoy?",
+    "duration": 2.48,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_greeting_responses[Buenos d\\xedas]": {
+    "name": "test_greeting_responses[Buenos d\\xedas]",
+    "sent_message": "Buenos d\u00edas",
+    "response_text": "\u00a1Hola! \ud83d\udc4b \u00bfEn qu\u00e9 puedo ayudarte hoy?",
+    "duration": 2.17,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_greeting_responses[Buenas tardes]": {
+    "name": "test_greeting_responses[Buenas tardes]",
+    "sent_message": "Buenas tardes",
+    "response_text": "\u00a1Hola! \ud83d\udc4b \u00bfEn qu\u00e9 puedo ayudarte hoy?",
+    "duration": 2.16,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_greeting_responses[Buenas noches]": {
+    "name": "test_greeting_responses[Buenas noches]",
+    "sent_message": "Buenas noches",
+    "response_text": "\u00a1Hola! \ud83d\udc4b \u00bfEn qu\u00e9 puedo ayudarte hoy?",
+    "duration": 2.17,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_price_inquiry_responses[\\xbfCu\\xe1nto cuesta?]": {
+    "name": "test_price_inquiry_responses[\\xbfCu\\xe1nto cuesta?]",
+    "sent_message": "\u00bfCu\u00e1nto cuesta?",
+    "response_text": "\ud83d\udcca Nuestros precios son muy competitivos. Contamos con planes desde $9.99 al mes. \u00bfTe gustar\u00eda conocer m\u00e1s detalles sobre alg\u00fan plan espec\u00edfico?",
+    "duration": 2.15,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_price_inquiry_responses[Precios]": {
+    "name": "test_price_inquiry_responses[Precios]",
+    "sent_message": "Precios",
+    "response_text": "\ud83d\udcca Nuestros precios son muy competitivos. Contamos con planes desde $9.99 al mes. \u00bfTe gustar\u00eda conocer m\u00e1s detalles sobre alg\u00fan plan espec\u00edfico?",
+    "duration": 2.15,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_price_inquiry_responses[Valor del servicio]": {
+    "name": "test_price_inquiry_responses[Valor del servicio]",
+    "sent_message": "Valor del servicio",
+    "response_text": "\ud83d\udcca Nuestros precios son muy competitivos. Contamos con planes desde $9.99 al mes. \u00bfTe gustar\u00eda conocer m\u00e1s detalles sobre alg\u00fan plan espec\u00edfico?",
+    "duration": 2.17,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_product_service_info_responses[\\xbfQu\\xe9 servicios ofrecen?]": {
+    "name": "test_product_service_info_responses[\\xbfQu\\xe9 servicios ofrecen?]",
+    "sent_message": "\u00bfQu\u00e9 servicios ofrecen?",
+    "response_text": "\ud83d\udecd\ufe0f Ofrecemos una amplia gama de servicios, incluyendo atenci\u00f3n al cliente, an\u00e1lisis de datos y automatizaci\u00f3n de marketing. \u00bfHay alg\u00fan servicio espec\u00edfico que te interese?",
+    "duration": 1.68,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_product_service_info_responses[Expl\\xedcame tus productos]": {
+    "name": "test_product_service_info_responses[Expl\\xedcame tus productos]",
+    "sent_message": "Expl\u00edcame tus productos",
+    "response_text": "\ud83d\udecd\ufe0f Ofrecemos una amplia gama de servicios, incluyendo atenci\u00f3n al cliente, an\u00e1lisis de datos y automatizaci\u00f3n de marketing. \u00bfHay alg\u00fan servicio espec\u00edfico que te interese?",
+    "duration": 2.18,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_product_service_info_responses[asdasdasdas]": {
+    "name": "test_product_service_info_responses[asdasdasdas]",
+    "sent_message": "asdasdasdas",
+    "response_text": "Lo siento, no entend\u00ed completamente tu pregunta. \u00bfPodr\u00edas reformularla o ser m\u00e1s espec\u00edfico? Estoy aqu\u00ed para ayudarte.",
+    "duration": 2.18,
+    "error": "AssertionError: Bot did not respond with product/service information to: asdasdasdas\nassert False\n +  where False = any(<generator object test_product_service_info_responses.<locals>.<genexpr> at 0x7f3354fec4a0>)",
+    "screenshot": "20250910_152352_failure_test_product_service_info_responses[asdasdasdas].png",
+    "status": "failed"
+  },
+  "tests/test_chatbot_responses.py::test_contact_info_responses[\\xbfC\\xf3mo puedo contactarlos?]": {
+    "name": "test_contact_info_responses[\\xbfC\\xf3mo puedo contactarlos?]",
+    "sent_message": "\u00bfC\u00f3mo puedo contactarlos?",
+    "response_text": "\ud83d\udcde Puedes contactarnos al tel\u00e9fono 555-123-4567 o enviarnos un correo a contacto@empresa.com. Nuestro horario de atenci\u00f3n es de 9:00 a 18:00 de lunes a viernes.",
+    "duration": 2.19,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_contact_info_responses[Datos de contacto]": {
+    "name": "test_contact_info_responses[Datos de contacto]",
+    "sent_message": "Datos de contacto",
+    "response_text": "\ud83d\udcde Puedes contactarnos al tel\u00e9fono 555-123-4567 o enviarnos un correo a contacto@empresa.com. Nuestro horario de atenci\u00f3n es de 9:00 a 18:00 de lunes a viernes.",
+    "duration": 1.71,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_responses.py::test_contact_info_responses[\\xbfTienen un n\\xfamero de tel\\xe9fono?]": {
+    "name": "test_contact_info_responses[\\xbfTienen un n\\xfamero de tel\\xe9fono?]",
+    "sent_message": "\u00bfTienen un n\u00famero de tel\u00e9fono?",
+    "response_text": "\ud83d\udcde Puedes contactarnos al tel\u00e9fono 555-123-4567 o enviarnos un correo a contacto@empresa.com. Nuestro horario de atenci\u00f3n es de 9:00 a 18:00 de lunes a viernes.",
+    "duration": 2.17,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_open_chat_panel": {
+    "name": "test_open_chat_panel",
+    "sent_message": null,
+    "response_text": "\ud83d\udc4b \u00a1Hola! Soy el asistente virtual de la empresa. Estoy aqu\u00ed para resolver tus dudas sobre nuestros productos, servicios, precios o cualquier otra consulta que tengas.",
+    "duration": 1.08,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_close_chat_panel": {
+    "name": "test_close_chat_panel",
+    "sent_message": null,
+    "response_text": "",
+    "duration": 2.12,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_send_button_functionality": {
+    "name": "test_send_button_functionality",
+    "sent_message": "Hola, esto es un test",
+    "response_text": "\ud83d\udc4b \u00a1Hola! Soy el asistente virtual de la empresa. Estoy aqu\u00ed para resolver tus dudas sobre nuestros productos, servicios, precios o cualquier otra consulta que tengas.",
+    "duration": 1.14,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_enter_key_send": {
+    "name": "test_enter_key_send",
+    "sent_message": "Mensaje enviado con Enter",
+    "response_text": "\ud83d\udc4b \u00a1Hola! Soy el asistente virtual de la empresa. Estoy aqu\u00ed para resolver tus dudas sobre nuestros productos, servicios, precios o cualquier otra consulta que tengas.",
+    "duration": 1.12,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_bot_response": {
+    "name": "test_bot_response",
+    "sent_message": "Hola",
+    "response_text": "\u00a1Hola! \ud83d\udc4b \u00bfEn qu\u00e9 puedo ayudarte hoy?",
+    "duration": 2.18,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_reset_chat_for_specific_test": {
+    "name": "test_reset_chat_for_specific_test",
+    "sent_message": "Mensaje despu\u00e9s del reinicio",
+    "response_text": "\ud83d\udc4b \u00a1Hola! Soy el asistente virtual de la empresa. Estoy aqu\u00ed para resolver tus dudas sobre nuestros productos, servicios, precios o cualquier otra consulta que tengas.",
+    "duration": 2.01,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  },
+  "tests/test_chatbot_ui.py::TestChatbotUI::test_multiple_messages_conversation": {
+    "name": "test_multiple_messages_conversation",
+    "sent_message": "Necesito ayuda",
+    "response_text": "Lo siento, no entend\u00ed completamente tu pregunta. \u00bfPodr\u00edas reformularla o ser m\u00e1s espec\u00edfico? Estoy aqu\u00ed para ayudarte.",
+    "duration": 4.13,
+    "error": null,
+    "screenshot": null,
+    "status": "passed"
+  }
+}

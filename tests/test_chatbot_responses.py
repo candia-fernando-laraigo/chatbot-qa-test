@@ -76,6 +76,7 @@ def test_price_inquiry_responses(driver, chatbot_page, query):
     [
         "¿Qué servicios ofrecen?",
         "Explícame tus productos",
+        "asdasdasdas",
     ],
 )
 def test_product_service_info_responses(driver, chatbot_page, query):
