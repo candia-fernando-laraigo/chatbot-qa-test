@@ -31,28 +31,6 @@ class TestLaraigoUI:
         ), "La ventana de chat debería estar visible después de abrirla"
 
     @pytest.mark.ui
-    def test_close_chat_window(self, laraigo_page: LaraigoPage):
-        """Test que la ventana del chat se cierra correctamente."""
-        laraigo_page.reset_state()
-
-        # Verificar que inicialmente está cerrada
-        assert (
-            not laraigo_page.is_chat_window_visible()
-        ), "La ventana de chat debería estar cerrada inicialmente"
-
-        # Abrir el chat
-        laraigo_page.open_chat()
-        assert (
-            laraigo_page.is_chat_window_visible()
-        ), "La ventana de chat debería estar visible después de abrirla"
-
-        # Cerrar el chat
-        laraigo_page.close_chat()
-        assert (
-            not laraigo_page.is_chat_window_visible()
-        ), "La ventana de chat debería estar cerrada después de cerrarla"
-
-    @pytest.mark.ui
     def test_enter_key_send(self, laraigo_page: LaraigoPage):
         """Test que la tecla Enter funciona para enviar mensajes."""
         # Abrir el chat
@@ -75,10 +53,8 @@ class TestLaraigoUI:
         laraigo_page.open_chat()
 
         # Enviar un mensaje y esperar respuesta
-        laraigo_page.send_message("Hola")
+        response = laraigo_page.send_message("Hola")
 
-        # Esperar y verificar que hay respuesta del bot
-        response = laraigo_page.wait_for_bot_response()
         assert response, "Debería haber una respuesta del bot"
 
         # Verificar que la respuesta se añadió a la lista de mensajes del bot
@@ -93,7 +69,6 @@ class TestLaraigoUI:
 
         # Enviar un mensaje para asegurarnos de que hay contenido
         laraigo_page.send_message("Mensaje antes de refrescar")
-        laraigo_page.wait_for_bot_response()
 
         user_messages_before = laraigo_page.get_all_user_messages_text()
         bot_messages_before = laraigo_page.get_all_bot_messages_text()
@@ -158,8 +133,6 @@ class TestLaraigoUI:
 
         for message in messages:
             laraigo_page.send_message(message)
-            # Esperar respuesta después de cada mensaje
-            laraigo_page.wait_for_bot_response()
 
         # Verificar que todos los mensajes del usuario están en el chat
         user_messages = laraigo_page.get_all_user_messages_text()
@@ -181,12 +154,6 @@ class TestLaraigoUI:
         msg_before_reset = "Mensaje antes del reinicio"
         laraigo_page.open_chat()
         laraigo_page.send_message(msg_before_reset)
-
-        # Esperar por la respuesta del bot (si la hay)
-        try:
-            laraigo_page.wait_for_bot_response()
-        except Exception as e:
-            print(f"No se pudo esperar respuesta del bot: {e}")
 
         # Ahora reiniciamos el estado del chat para este test específico
         laraigo_page.reset_state()

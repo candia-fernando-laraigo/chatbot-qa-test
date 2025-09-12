@@ -27,6 +27,10 @@ test-ui: setup
 test-responses: setup
 	@$(VENV)/bin/python main.py --suite responses
 
+report:
+	# Detectar y abrir el reporte HTML generado
+	@if [ -f report.html ]; then xdg-open report.html || open report.html; else echo "No report.html found!"; fi
+
 # Clean up
 clean:
 	@echo "Cleaning up..."

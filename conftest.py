@@ -20,6 +20,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from pytest_html import extras
 
+# Import test logger
+from utils.logger import TestLogger
+
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -83,6 +86,9 @@ def wait(driver: WebDriver):
 # Storage for test data
 TEST_DATA = {}
 
+# Create a test logger instance
+test_logger = TestLogger()
+
 
 @pytest.fixture(scope="function")
 def chatbot_page(driver: WebDriver):
@@ -90,6 +96,12 @@ def chatbot_page(driver: WebDriver):
     from pages.chatbot_page import ChatbotPage
 
     return ChatbotPage(driver)
+
+
+@pytest.fixture(scope="function")
+def logger():
+    """Fixture to provide access to the test logger from tests."""
+    return test_logger
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -104,6 +116,8 @@ def pytest_runtest_protocol(item, nextitem):
         "screenshot": None,
         "duration": None,
     }
+    # Log test start
+    test_logger.log_test_start(test_id)
     yield
 
 
@@ -125,9 +139,19 @@ def pytest_runtest_makereport(item, call):
     # Store end time and calculate duration
     if test_id in TEST_DATA:
         if report.when == "call":
-            TEST_DATA[test_id]["duration"] = (
-                time.time() - TEST_DATA[test_id]["start_time"]
-            )
+            duration = time.time() - TEST_DATA[test_id]["start_time"]
+            TEST_DATA[test_id]["duration"] = duration
+            
+            # Log test completion with duration and status
+            status = "PASS" if report.passed else "FAIL"
+            error_msg = None
+            if not report.passed:
+                error_msg = (
+                    report.longrepr.reprcrash.message
+                    if hasattr(report, "longrepr") and hasattr(report.longrepr, "reprcrash")
+                    else "Test failed without detailed error message"
+                )
+            test_logger.log_test_end(test_id, status, duration, error_msg)
 
             # If the test has a chatbot_page fixture and it was accessed, try to get messages
             if hasattr(item, "funcargs"):

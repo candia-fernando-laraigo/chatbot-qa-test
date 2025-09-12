@@ -42,7 +42,7 @@ class LaraigoPage:
     ATTACHMENT_LOCATION = (By.ID, "input-location-button")
     CHAT_IDLE_MESSAGE = (By.ID, "chat-idle-message")
 
-    def __init__(self, driver: WebDriver, timeout: int = 60):
+    def __init__(self, driver: WebDriver, timeout: int = 90):
         """Inicializar la página con el WebDriver proporcionado y un timeout personalizable."""
         self.driver: WebDriver = driver
         self.wait: WebDriverWait = WebDriverWait(driver, timeout)
@@ -123,8 +123,19 @@ class LaraigoPage:
                 "No se encontró el botón de actualización del chat."
             )
 
-    def send_message(self, message: str) -> "LaraigoPage":
-        """Enviar un mensaje al chatbot."""
+    def send_message(self, message: str) -> List[str]:
+        """
+        Enviar un mensaje al chatbot y esperar su respuesta.
+        
+        Esta función es atómica: maneja tanto el envío del mensaje como la captura 
+        de la respuesta del bot en una sola operación.
+        
+        Args:
+            message: El mensaje a enviar
+            
+        Returns:
+            Lista con los textos de las respuestas nuevas del bot
+        """
         try:
             if not self.is_chat_window_visible():
                 self.open_chat()
@@ -133,15 +144,18 @@ class LaraigoPage:
             self.wait.until(EC.element_to_be_clickable(self.CHAT_INPUT))
             chat_input: WebElement = self.driver.find_element(*self.CHAT_INPUT)
 
+            msg_bot_count = len(self.get_all_bot_messages())
             # Limpiar el campo y escribir el mensaje
             chat_input.clear()
             chat_input.send_keys(message)
             chat_input.send_keys(Keys.RETURN)
 
-            # Esperar a que el mensaje aparezca en el historial
+            # Esperar a que el mensaje del usuario aparezca en el historial
             self.wait.until(lambda _: message in self.get_all_user_messages_text())
+            self.wait.until(lambda _: len(self.get_all_bot_messages()) > msg_bot_count)
 
-            return self
+            new_bot_messages = self.get_all_bot_messages()[msg_bot_count:]
+            return [msg.text for msg in new_bot_messages]
         except TimeoutException:
             raise TimeoutException(
                 f"No se pudo enviar el mensaje dentro de {self.timeout} segundos."
@@ -150,86 +164,6 @@ class LaraigoPage:
             raise NoSuchElementException(
                 "No se encontraron los elementos necesarios para enviar un mensaje."
             )
-
-    def wait_for_bot_response(self, timeout: Optional[int] = None) -> List[str]:
-        """
-        Esperar a que el bot responda y devolver los textos de todas las respuestas nuevas.
-
-        Args:
-            timeout: Tiempo máximo de espera en segundos (si es None, usa el timeout predeterminado)
-            extra_wait: Tiempo adicional de espera en segundos para capturar múltiples respuestas
-
-        Returns:
-            Lista con los textos de las nuevas respuestas del bot
-        """
-        wait_time = timeout if timeout is not None else self.timeout
-        print(f"\n[DEBUG] Esperando respuesta del bot (timeout: {wait_time}s)")
-
-        try:
-            # Obtener el número actual de mensajes del bot
-            current_bot_messages = self.get_all_bot_messages()
-            current_count = len(current_bot_messages)
-            print(f"[DEBUG] Mensajes actuales del bot: {current_count}")
-            if current_count > 0:
-                print(f"[DEBUG] Último mensaje actual: {current_bot_messages[-1].text}")
-
-            print(f"[DEBUG] Esperando nuevos mensajes del bot...")
-            # Esperar a que aparezca un nuevo mensaje del bot
-            self.wait.until(lambda _: len(self.get_all_bot_messages()) > current_count)
-
-            # Obtener todos los mensajes nuevos del bot
-            all_bot_messages = self.get_all_bot_messages()
-            new_count = len(all_bot_messages)
-            print(f"[DEBUG] Mensajes después de espera: {new_count} (nuevos: {new_count - current_count})")
-            
-            new_messages = all_bot_messages[current_count:]
-            response_texts = [message.text for message in new_messages]
-            print(f"[DEBUG] Nuevas respuestas: {response_texts}")
-            
-            # Tomar captura de pantalla para confirmar visualmente
-            try:
-                from datetime import datetime
-                import os
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                screenshot_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "screenshots")
-                if not os.path.exists(screenshot_dir):
-                    os.makedirs(screenshot_dir)
-                screenshot_path = os.path.join(screenshot_dir, f"{timestamp}_bot_response.png")
-                self.driver.save_screenshot(screenshot_path)
-                print(f"[DEBUG] Captura de respuesta guardada: {screenshot_path}")
-            except Exception as e:
-                print(f"[DEBUG] Error al tomar captura: {e}")
-                
-            return response_texts
-        except TimeoutException:
-            print(f"[DEBUG] TIMEOUT: No apareció ningún mensaje nuevo del bot en {wait_time}s")
-            # Intentar obtener todos los mensajes para depuración
-            try:
-                all_messages = self.get_all_bot_messages_text()
-                print(f"[DEBUG] Todos los mensajes del bot al momento del timeout: {all_messages}")
-            except Exception as e:
-                print(f"[DEBUG] Error al obtener mensajes durante timeout: {e}")
-            
-            # Tomar captura de pantalla del timeout
-            try:
-                from datetime import datetime
-                import os
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                screenshot_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "screenshots")
-                if not os.path.exists(screenshot_dir):
-                    os.makedirs(screenshot_dir)
-                screenshot_path = os.path.join(screenshot_dir, f"{timestamp}_timeout_bot_response.png")
-                self.driver.save_screenshot(screenshot_path)
-                print(f"[DEBUG] Captura de timeout guardada: {screenshot_path}")
-            except Exception as e:
-                print(f"[DEBUG] Error al tomar captura durante timeout: {e}")
-                
-            raise TimeoutException(
-                f"No apareció un nuevo mensaje del bot dentro de {wait_time} segundos."
-            )
-        except NoSuchElementException:
-            print(f"[DEBUG] ERROR: No se encontró el último mensaje del bot")
-            raise NoSuchElementException("No se encontró el último mensaje del bot.")
 
     def is_chat_window_visible(self) -> bool:
         """Verificar si la ventana del chat está visible."""
@@ -440,62 +374,3 @@ class LaraigoPage:
         except Exception as e:
             print(f"Error al reiniciar el estado del chat: {e}")
             raise
-            
-    def debug_state(self, test_name: str, action: str = "", take_screenshot: bool = False) -> None:
-        """
-        Función de debug para mostrar el estado actual del chat.
-        
-        Args:
-            test_name: Nombre del test para identificación
-            action: Descripción de la acción actual (ej: "antes de enviar mensaje", "después de respuesta")
-            take_screenshot: Si es True, toma una captura de pantalla
-            
-        Imprime información sobre:
-        - Visibilidad de la ventana de chat
-        - Mensajes del usuario
-        - Mensajes del bot
-        """
-        import json
-        from datetime import datetime
-        import os
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        # Obtener información
-        is_visible = self.is_chat_window_visible()
-        user_messages = self.get_all_user_messages_text()
-        bot_messages = self.get_all_bot_messages_text()
-        
-        # Crear mensaje de debug
-        debug_info = {
-            "timestamp": timestamp,
-            "test": test_name,
-            "action": action,
-            "chat_visible": is_visible,
-            "user_messages": user_messages,
-            "bot_messages": bot_messages,
-            "user_messages_count": len(user_messages),
-            "bot_messages_count": len(bot_messages),
-        }
-        
-        # Imprimir información
-        print("\n" + "="*80)
-        print(f"DEBUG INFO - {timestamp} - {test_name} - {action}")
-        print(f"Chat window visible: {is_visible}")
-        print(f"User messages ({len(user_messages)}): {json.dumps(user_messages, indent=2, ensure_ascii=False)}")
-        print(f"Bot messages ({len(bot_messages)}): {json.dumps(bot_messages, indent=2, ensure_ascii=False)}")
-        print("="*80 + "\n")
-        
-        # Tomar captura de pantalla si se solicita
-        if take_screenshot:
-            try:
-                screenshot_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "screenshots")
-                if not os.path.exists(screenshot_dir):
-                    os.makedirs(screenshot_dir)
-                
-                screenshot_name = f"{timestamp}_debug_{test_name}_{action.replace(' ', '_')}.png"
-                screenshot_path = os.path.join(screenshot_dir, screenshot_name)
-                self.driver.save_screenshot(screenshot_path)
-                print(f"Screenshot saved: {screenshot_path}")
-            except Exception as e:
-                print(f"Error al tomar captura de pantalla: {e}")

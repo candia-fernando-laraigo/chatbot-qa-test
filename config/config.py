@@ -13,7 +13,7 @@ BROWSER_TYPE: str = 'chrome'  # Options: chrome, firefox, edge
 HEADLESS: bool = True  # Set to False for debugging visual issues
 
 # Test execution configuration
-PYTEST_WORKERS: int = 20  # Number of parallel test executions
+PYTEST_WORKERS: int = 32  # Number of parallel test executions
 PARALLEL_PROCESSES: int = 2
 IMPLICIT_WAIT: int = 60  # Default wait time in seconds
 EXPLICIT_WAIT: int = 60  # Default explicit wait time in seconds
