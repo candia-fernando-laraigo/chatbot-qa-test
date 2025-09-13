@@ -8,7 +8,7 @@ import time
 from pages.chatbot_page import ChatbotPage
 
 
-@pytest.mark.responses
+@pytest.mark.examples
 @pytest.mark.parametrize(
     "greeting", ["Hola", "Buenos días", "Buenas tardes", "Buenas noches"]
 )
@@ -40,7 +40,7 @@ def test_greeting_responses(driver, chatbot_page, greeting):
     ), f"Bot did not respond appropriately to greeting: {greeting}"
 
 
-@pytest.mark.responses
+@pytest.mark.examples
 @pytest.mark.parametrize("query", ["¿Cuánto cuesta?", "Precios", "Valor del servicio"])
 def test_price_inquiry_responses(driver, chatbot_page, query):
     """TC-RESP-002: Verify that the bot responds to price inquiries."""
@@ -70,7 +70,7 @@ def test_price_inquiry_responses(driver, chatbot_page, query):
     ), f"Bot did not respond appropriately to price query: {query}"
 
 
-@pytest.mark.responses
+@pytest.mark.examples
 @pytest.mark.parametrize(
     "query",
     [
@@ -106,7 +106,7 @@ def test_product_service_info_responses(driver, chatbot_page, query):
     ), f"Bot did not respond with product/service information to: {query}"
 
 
-@pytest.mark.responses
+@pytest.mark.examples
 @pytest.mark.parametrize(
     "query",
     [

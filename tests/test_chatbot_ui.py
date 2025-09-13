@@ -16,7 +16,7 @@ def chatbot_page(driver):
 class TestChatbotUI:
     """Test class for chatbot UI functionality."""
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_open_chat_panel(self, chatbot_page: ChatbotPage):
         """Test que el panel del chat se abre correctamente."""
         # Verificar que inicialmente está cerrado
@@ -30,7 +30,7 @@ class TestChatbotUI:
             chatbot_page.is_chat_panel_visible()
         ), "El panel de chat debería estar visible después de abrirlo"
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_close_chat_panel(self, chatbot_page: ChatbotPage):
         """Test que el panel del chat se cierra correctamente."""
         chatbot_page.reset_state()
@@ -52,7 +52,7 @@ class TestChatbotUI:
             not chatbot_page.is_chat_panel_visible()
         ), "El panel de chat debería estar cerrado después de cerrarlo"
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_send_button_functionality(self, chatbot_page: ChatbotPage):
         """Test que el botón de enviar funciona correctamente."""
         # Abrir el chat
@@ -73,7 +73,7 @@ class TestChatbotUI:
             test_message in user_messages
         ), "El mensaje del usuario debería aparecer en el chat"
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_enter_key_send(self, chatbot_page: ChatbotPage):
         """Test que la tecla Enter funciona para enviar mensajes."""
         # Abrir el chat
@@ -89,7 +89,7 @@ class TestChatbotUI:
             test_message in user_messages
         ), "El mensaje enviado con Enter debería aparecer en el chat"
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_bot_response(self, chatbot_page: ChatbotPage):
         """Test que el bot responde a los mensajes."""
         # Abrir el chat
@@ -106,7 +106,7 @@ class TestChatbotUI:
         bot_messages = chatbot_page.get_all_bot_messages()
         assert len(bot_messages) > 0, "Debería haber al menos un mensaje del bot"
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_reset_chat_for_specific_test(self, chatbot_page: ChatbotPage):
         """Test que demuestra cómo reiniciar la instancia del chatbot para un test específico."""
         # Primero realizamos algunas acciones que podrían afectar el estado
@@ -134,7 +134,7 @@ class TestChatbotUI:
             "Mensaje después del reinicio" in user_messages
         ), "El mensaje después del reinicio debería estar en el chat"
 
-    @pytest.mark.ui
+    @pytest.mark.examples
     def test_multiple_messages_conversation(self, chatbot_page: ChatbotPage):
         """Test que verifica una conversación con múltiples mensajes."""
         # Abrir el chat

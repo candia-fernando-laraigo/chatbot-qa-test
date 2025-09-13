@@ -19,7 +19,6 @@ def main():
     parser = argparse.ArgumentParser(description="Run Chatbot QA Tests")
     parser.add_argument(
         "--suite",
-        choices=["ui", "responses", "all"],
         default="all",
         help="Test suite to run",
     )

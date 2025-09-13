@@ -14,7 +14,7 @@ def laraigo_page(driver):
     return LaraigoPage(driver)
 
 
-@pytest.mark.responses
+@pytest.mark.laraigo
 @pytest.mark.parametrize(
     "greeting",
     [
@@ -71,7 +71,7 @@ def test_greeting_responses(driver, laraigo_page, greeting, logger):
     ), f"Ninguna de las respuesta del bot comienza con 'Hola Blanquiazul' para el mensaje: {greeting}. Respuestas: {bot_response}"
 
 
-@pytest.mark.responses
+@pytest.mark.laraigo
 @pytest.mark.parametrize(
     "query",
     [
@@ -130,7 +130,7 @@ def test_membership_inquiry_responses(driver, laraigo_page, query, logger):
     ), f"Ninguna de las respuesta del bot comienza con 'Gracias por contactarte' para la consulta: {query}. Respuesta: {bot_response}"
 
 
-@pytest.mark.responses
+@pytest.mark.laraigo
 @pytest.mark.parametrize(
     "query",
     [

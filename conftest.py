@@ -223,7 +223,6 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
     # Create a summary JSON file with all test data
     if config.getoption("htmlpath"):
         html_path = config.getoption("htmlpath")
-        json_path = html_path.replace(".html", "_test_data.json")
 
         # Prepare a clean version of test data for JSON output
         summary_data = {}
@@ -245,10 +244,6 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
             summary_data[test_id] = clean_data
 
         try:
-            with open(json_path, "w") as f:
-                json.dump(summary_data, f, indent=2)
-            print(f"\nTest data summary written to: {json_path}")
-
             # Add the summary to the HTML report
             if os.path.exists(html_path):
                 with open(html_path, "r", encoding="utf-8") as f:

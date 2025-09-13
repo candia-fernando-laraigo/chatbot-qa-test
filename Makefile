@@ -19,13 +19,10 @@ setup:
 # Run tests with different options
 test: setup
 	@echo "Running all tests..."
-	@$(VENV)/bin/python main.py --suite all
+	@$(VENV)/bin/python main.py --suite laraigo
 
-test-ui: setup
-	@$(VENV)/bin/python main.py --suite ui
-
-test-responses: setup
-	@$(VENV)/bin/python main.py --suite responses
+test-examples: setup
+	@$(VENV)/bin/python main.py --suite examples
 
 report:
 	# Detectar y abrir el reporte HTML generado
@@ -43,7 +40,5 @@ help:
 	@echo "Available commands:"
 	@echo "  make setup         - Set up the environment"
 	@echo "  make test          - Run all tests"
-	@echo "  make test-ui       - Run UI tests only"
-	@echo "  make test-responses - Run response tests only"
-	@echo "  make test-parallel - Run tests in parallel"
+	@echo "  make test-examples - Run example tests only"
 	@echo "  make clean         - Clean up the environment"
