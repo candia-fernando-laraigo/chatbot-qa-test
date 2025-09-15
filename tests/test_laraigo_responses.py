@@ -26,7 +26,7 @@ def laraigo_page(driver):
         "Hola como estas",
     ],
 )
-def test_greeting_responses(driver, laraigo_page, greeting, logger):
+def test_greeting_responses(driver, laraigo_page, greeting, logger, request, test_data):
     """
     Test Case 1: Saludos y Frases de Cortesía
     Objetivo: Verificar que el sistema responde de manera correcta y consistente
@@ -64,6 +64,9 @@ def test_greeting_responses(driver, laraigo_page, greeting, logger):
     # Log all user messages
     for idx, msg in enumerate(laraigo_page.get_all_user_messages_text()):
         logger.debug(f"User message {idx + 1}: {msg}")
+    
+    # Save test data for reporting
+    test_data(sent_message=greeting, response_text=bot_response, response_time=response_time)
 
     # Verificar que la respuesta del bot comienza con "Hola Blanquiazul"
     assert any(
@@ -84,7 +87,7 @@ def test_greeting_responses(driver, laraigo_page, greeting, logger):
         "Como cancelo la membresia?",
     ],
 )
-def test_membership_inquiry_responses(driver, laraigo_page, query, logger):
+def test_membership_inquiry_responses(driver, laraigo_page, query, logger, request, test_data):
     """
     Test Case 2: Consultas sobre la Membresía
     Objetivo: Validar que el sistema identifica preguntas relacionadas con la membresía
@@ -124,6 +127,9 @@ def test_membership_inquiry_responses(driver, laraigo_page, query, logger):
     for idx, msg in enumerate(laraigo_page.get_all_user_messages_text()):
         logger.debug(f"User message {idx + 1}: {msg}")
 
+    # Save test data for reporting
+    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
+    
     # Verificar que la respuesta del bot comienza con "Gracias por contactarte"
     assert any(
         msg_text.startswith("Gracias por contactarte") for msg_text in bot_response
@@ -142,7 +148,7 @@ def test_membership_inquiry_responses(driver, laraigo_page, query, logger):
         "Quien ganara el mundial",
     ],
 )
-def test_out_of_scope_responses(driver, laraigo_page, query, logger):
+def test_out_of_scope_responses(driver, laraigo_page, query, logger, request, test_data):
     """
     Test Case 3: Preguntas Fuera de Alcance (General Knowledge & Personal Info)
     Objetivo: Comprobar que el sistema gestiona adecuadamente las preguntas que no está
@@ -181,7 +187,10 @@ def test_out_of_scope_responses(driver, laraigo_page, query, logger):
     # Log all user messages
     for idx, msg in enumerate(laraigo_page.get_all_user_messages_text()):
         logger.debug(f"User message {idx + 1}: {msg}")
-
+    
+    # Save test data for reporting
+    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
+    
     assert any(
         msg_text.startswith("Lo lamento") for msg_text in bot_response
     ), f"Ninguna de las respuesta del bot comienza con 'Lo lamento' para la consulta: {query}. Respuesta: {bot_response}"

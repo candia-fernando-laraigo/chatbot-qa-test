@@ -4,13 +4,8 @@ Tests the visibility and interaction with UI elements.
 """
 
 import pytest
+import time
 from pages.chatbot_page import ChatbotPage
-
-
-@pytest.fixture
-def chatbot_page(driver):
-    """Fixture para crear una instancia de ChatbotPage que se reutiliza en los tests."""
-    return ChatbotPage(driver)
 
 
 class TestChatbotUI:
@@ -90,17 +85,23 @@ class TestChatbotUI:
         ), "El mensaje enviado con Enter debería aparecer en el chat"
 
     @pytest.mark.examples
-    def test_bot_response(self, chatbot_page: ChatbotPage):
+    def test_bot_response(self, chatbot_page: ChatbotPage, request, test_data):
         """Test que el bot responde a los mensajes."""
         # Abrir el chat
         chatbot_page.open_chat()
 
         # Enviar un mensaje y esperar respuesta
-        chatbot_page.send_message("Hola")
+        test_message = "Hola"
+        start_time = time.time()
+        chatbot_page.send_message(test_message)
 
         # Esperar y verificar que hay respuesta del bot
         response = chatbot_page.wait_for_bot_response()
+        response_time = time.time() - start_time
         assert response, "Debería haber una respuesta del bot"
+
+        # Save test data for reporting
+        test_data(sent_message=test_message, response_text=response, response_time=response_time)
 
         # Verificar que la respuesta se añadió a la lista de mensajes del bot
         bot_messages = chatbot_page.get_all_bot_messages()
@@ -135,18 +136,31 @@ class TestChatbotUI:
         ), "El mensaje después del reinicio debería estar en el chat"
 
     @pytest.mark.examples
-    def test_multiple_messages_conversation(self, chatbot_page: ChatbotPage):
+    def test_multiple_messages_conversation(self, chatbot_page: ChatbotPage, request, test_data):
         """Test que verifica una conversación con múltiples mensajes."""
         # Abrir el chat
         chatbot_page.open_chat()
 
         # Enviar múltiples mensajes
         messages = ["Hola", "¿Cómo estás?", "Necesito ayuda"]
+        
+        # Registramos el tiempo para el diálogo completo
+        start_time = time.time()
+        all_responses = []
 
         for message in messages:
             chatbot_page.send_message(message)
             # Esperar respuesta después de cada mensaje
-            chatbot_page.wait_for_bot_response()
+            response = chatbot_page.wait_for_bot_response()
+            if response:
+                all_responses.append(response)
+
+        response_time = time.time() - start_time
+
+        # Save test data for reporting (último mensaje y última respuesta)
+        last_message = messages[-1] if messages else ""
+        last_response = all_responses[-1] if all_responses else None
+        test_data(sent_message=last_message, response_text=last_response, response_time=response_time)
 
         # Verificar que todos los mensajes del usuario están en el chat
         user_messages = chatbot_page.get_all_user_messages()

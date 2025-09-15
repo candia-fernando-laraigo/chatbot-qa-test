@@ -43,12 +43,8 @@ def pytest_configure(config):
     if not os.path.exists(SCREENSHOT_DIR):
         os.makedirs(SCREENSHOT_DIR)
 
-    # Add custom marks
-    config.addinivalue_line("markers", "ui: mark a test as a UI test")
-    config.addinivalue_line("markers", "messages: mark a test as a messaging test")
-    config.addinivalue_line(
-        "markers", "responses: mark a test as a response validation test"
-    )
+    config.addinivalue_line("markers", "examples: mark a test as an example test")
+    config.addinivalue_line("markers", "laraigo: mark a test as a Laraigo-specific test")
 
     # Add custom CSS via environment variable which pytest-html will pick up
     css = """
@@ -104,6 +100,22 @@ def logger():
     return test_logger
 
 
+@pytest.fixture(scope="function")
+def test_data(request):
+    """Fixture to store test data for reporting."""
+    def _save_data(sent_message=None, response_text=None, response_time=None):
+        test_id = request.node.nodeid
+        if test_id in TEST_DATA:
+            if sent_message is not None:
+                TEST_DATA[test_id]["sent_message"] = sent_message
+            if response_text is not None:
+                TEST_DATA[test_id]["response_text"] = response_text
+            if response_time is not None:
+                TEST_DATA[test_id]["response_time"] = response_time
+    
+    return _save_data
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item, nextitem):
     """Capture start and end time of test."""
@@ -141,6 +153,10 @@ def pytest_runtest_makereport(item, call):
         if report.when == "call":
             duration = time.time() - TEST_DATA[test_id]["start_time"]
             TEST_DATA[test_id]["duration"] = duration
+            
+            # Include response_time in the HTML report if it exists
+            if "response_time" in TEST_DATA[test_id]:
+                TEST_DATA[test_id]["response_time_ms"] = round(TEST_DATA[test_id]["response_time"] * 1000, 2)
             
             # Log test completion with duration and status
             status = "PASS" if report.passed else "FAIL"
@@ -193,14 +209,14 @@ def pytest_runtest_makereport(item, call):
                         screenshot_base64 = base64.b64encode(img_file.read()).decode(
                             "utf-8"
                         )
-                    report.extra = [
+                    report.extras = [
                         extras.html(
                             f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></div>'
                         ),
                         extras.image(screenshot_base64, screenshot_name),
                     ]
                 except Exception as e:
-                    report.extra = [
+                    report.extras = [
                         extras.html(
                             f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre><p>Error loading screenshot: {str(e)}</p></div>'
                         )
@@ -208,10 +224,39 @@ def pytest_runtest_makereport(item, call):
 
     # Add test data to the report for passed tests too
     if report.when == "call" and report.passed and test_id in TEST_DATA:
-        report.extra = [
-            extras.html(
-                f'<div class="test-data"><h3>Test Data</h3><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></div>'
-            )
+        # Create a more user-friendly HTML report
+        test_data_html = '<div class="test-data"><h3>Test Data</h3><table style="width:100%; border-collapse: collapse;">'
+        
+        # Add message and response rows if they exist
+        if TEST_DATA[test_id].get("sent_message"):
+            test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Sent Message:</td><td style="padding:8px; border:1px solid #ddd;">{TEST_DATA[test_id]["sent_message"]}</td></tr>'
+        
+        if TEST_DATA[test_id].get("response_text"):
+            # Format the response text (could be a list or string)
+            response = TEST_DATA[test_id]["response_text"]
+            if isinstance(response, list):
+                response_formatted = "<br>".join(response)
+            else:
+                response_formatted = str(response)
+            test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Bot Response:</td><td style="padding:8px; border:1px solid #ddd;">{response_formatted}</td></tr>'
+        
+        # Add response time if it exists
+        if TEST_DATA[test_id].get("response_time"):
+            response_time_ms = round(TEST_DATA[test_id]["response_time"] * 1000, 2)
+            test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Response Time:</td><td style="padding:8px; border:1px solid #ddd;">{response_time_ms} ms</td></tr>'
+        
+        # Add test duration
+        if TEST_DATA[test_id].get("duration"):
+            duration_sec = round(TEST_DATA[test_id]["duration"], 2)
+            test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Test Duration:</td><td style="padding:8px; border:1px solid #ddd;">{duration_sec} sec</td></tr>'
+        
+        test_data_html += '</table>'
+        
+        # Add raw data in a collapsible section
+        test_data_html += f'<details><summary style="margin-top:10px; cursor:pointer;">Raw Test Data</summary><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></details></div>'
+        
+        report.extras = [
+            extras.html(test_data_html)
         ]
 
 

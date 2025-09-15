@@ -12,7 +12,7 @@ from pages.chatbot_page import ChatbotPage
 @pytest.mark.parametrize(
     "greeting", ["Hola", "Buenos días", "Buenas tardes", "Buenas noches"]
 )
-def test_greeting_responses(driver, chatbot_page, greeting):
+def test_greeting_responses(driver, chatbot_page, greeting, request, test_data):
     """TC-RESP-001: Verify that the bot responds appropriately to greetings."""
 
     # Open chat
@@ -27,11 +27,8 @@ def test_greeting_responses(driver, chatbot_page, greeting):
     bot_response = chatbot_page.wait_for_bot_response()
     response_time = time.time() - start_time
 
-    # Make the chatbot_page available to the test report hook
-    pytest.chatbot_page = chatbot_page
-    pytest.sent_message = greeting
-    pytest.response_text = bot_response
-    pytest.response_time = response_time
+    # Save test data for reporting
+    test_data(sent_message=greeting, response_text=bot_response, response_time=response_time)
 
     # Verify bot responds with a greeting
     assert any(
@@ -42,7 +39,7 @@ def test_greeting_responses(driver, chatbot_page, greeting):
 
 @pytest.mark.examples
 @pytest.mark.parametrize("query", ["¿Cuánto cuesta?", "Precios", "Valor del servicio"])
-def test_price_inquiry_responses(driver, chatbot_page, query):
+def test_price_inquiry_responses(driver, chatbot_page, query, request, test_data):
     """TC-RESP-002: Verify that the bot responds to price inquiries."""
 
     # Open chat
@@ -57,11 +54,8 @@ def test_price_inquiry_responses(driver, chatbot_page, query):
     bot_response = chatbot_page.wait_for_bot_response()
     response_time = time.time() - start_time
 
-    # Make the chatbot_page available to the test report hook
-    pytest.chatbot_page = chatbot_page
-    pytest.sent_message = query
-    pytest.response_text = bot_response
-    pytest.response_time = response_time
+    # Save test data for reporting
+    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
 
     # Verify bot mentions prices or refers to sales
     assert any(
@@ -78,7 +72,7 @@ def test_price_inquiry_responses(driver, chatbot_page, query):
         "Explícame tus productos",
     ],
 )
-def test_product_service_info_responses(driver, chatbot_page, query):
+def test_product_service_info_responses(driver, chatbot_page, query, request, test_data):
     """TC-RESP-003: Verify that the bot provides product/service information."""
 
     # Open chat
@@ -93,11 +87,8 @@ def test_product_service_info_responses(driver, chatbot_page, query):
     bot_response = chatbot_page.wait_for_bot_response()
     response_time = time.time() - start_time
 
-    # Make the chatbot_page available to the test report hook
-    pytest.chatbot_page = chatbot_page
-    pytest.sent_message = query
-    pytest.response_text = bot_response
-    pytest.response_time = response_time
+    # Save test data for reporting
+    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
 
     # Verify bot mentions products or services
     assert any(
@@ -115,7 +106,7 @@ def test_product_service_info_responses(driver, chatbot_page, query):
         "¿Tienen un número de teléfono?",
     ],
 )
-def test_contact_info_responses(driver, chatbot_page, query):
+def test_contact_info_responses(driver, chatbot_page, query, request, test_data):
     """TC-RESP-004: Verify that the bot provides contact information when requested."""
 
     # Open chat
@@ -130,11 +121,8 @@ def test_contact_info_responses(driver, chatbot_page, query):
     bot_response = chatbot_page.wait_for_bot_response()
     response_time = time.time() - start_time
 
-    # Make the chatbot_page available to the test report hook
-    pytest.chatbot_page = chatbot_page
-    pytest.sent_message = query
-    pytest.response_text = bot_response
-    pytest.response_time = response_time
+    # Save test data for reporting
+    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
 
     # Verify bot provides contact information
     assert any(

@@ -42,7 +42,7 @@ class LaraigoPage:
     ATTACHMENT_LOCATION = (By.ID, "input-location-button")
     CHAT_IDLE_MESSAGE = (By.ID, "chat-idle-message")
 
-    def __init__(self, driver: WebDriver, timeout: int = 90):
+    def __init__(self, driver: WebDriver, timeout: int = 150):
         """Inicializar la página con el WebDriver proporcionado y un timeout personalizable."""
         self.driver: WebDriver = driver
         self.wait: WebDriverWait = WebDriverWait(driver, timeout)

@@ -4,6 +4,7 @@ Tests the visibility and interaction with UI elements.
 """
 
 import pytest
+import time
 from pages.laraigo_page import LaraigoPage
 
 
@@ -47,15 +48,21 @@ class TestLaraigoUI:
         ), "El mensaje enviado con Enter debería aparecer en el chat"
 
     @pytest.mark.laraigo
-    def test_bot_response(self, laraigo_page: LaraigoPage):
+    def test_bot_response(self, laraigo_page: LaraigoPage, request, test_data):
         """Test que el bot responde a los mensajes."""
         # Abrir el chat
         laraigo_page.open_chat()
 
         # Enviar un mensaje y esperar respuesta
-        response = laraigo_page.send_message("Hola")
+        test_message = "Hola"
+        start_time = time.time()
+        response = laraigo_page.send_message(test_message)
+        response_time = time.time() - start_time
 
         assert response, "Debería haber una respuesta del bot"
+        
+        # Save test data for reporting
+        test_data(sent_message=test_message, response_text=response, response_time=response_time)
 
         # Verificar que la respuesta se añadió a la lista de mensajes del bot
         bot_messages = laraigo_page.get_all_bot_messages_text()
@@ -123,16 +130,29 @@ class TestLaraigoUI:
         ), "El menú de adjuntos debería estar cerrado después de cerrarlo"
 
     @pytest.mark.laraigo
-    def test_multiple_messages_conversation(self, laraigo_page: LaraigoPage):
+    def test_multiple_messages_conversation(self, laraigo_page: LaraigoPage, request, test_data):
         """Test que verifica una conversación con múltiples mensajes."""
         # Abrir el chat
         laraigo_page.open_chat()
 
         # Enviar múltiples mensajes
         messages = ["Hola", "¿Cómo estás?", "Necesito ayuda"]
+        
+        # Registramos el tiempo para el diálogo completo
+        start_time = time.time()
+        all_responses = []
 
         for message in messages:
-            laraigo_page.send_message(message)
+            response = laraigo_page.send_message(message)
+            if response:
+                all_responses.append(response)
+
+        response_time = time.time() - start_time
+
+        # Save test data for reporting (último mensaje y última respuesta)
+        last_message = messages[-1] if messages else ""
+        last_response = all_responses[-1] if all_responses else None
+        test_data(sent_message=last_message, response_text=last_response, response_time=response_time)
 
         # Verificar que todos los mensajes del usuario están en el chat
         user_messages = laraigo_page.get_all_user_messages_text()

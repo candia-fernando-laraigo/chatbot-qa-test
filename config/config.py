@@ -16,7 +16,6 @@ HEADLESS: bool = True  # Set to False for debugging visual issues
 
 # Test execution configuration
 PYTEST_WORKERS: int = 16  # Number of parallel test executions
-PARALLEL_PROCESSES: int = 2  # Number of parallel processes of pytest-xdist
 IMPLICIT_WAIT: int = 60  # Default wait time in seconds
 EXPLICIT_WAIT: int = 60  # Default explicit wait time in seconds
 
