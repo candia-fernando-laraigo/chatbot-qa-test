@@ -42,7 +42,7 @@ class LaraigoPage:
     ATTACHMENT_LOCATION = (By.ID, "input-location-button")
     CHAT_IDLE_MESSAGE = (By.ID, "chat-idle-message")
 
-    def __init__(self, driver: WebDriver, timeout: int = 150):
+    def __init__(self, driver: WebDriver, timeout: int = 240):
         """Inicializar la página con el WebDriver proporcionado y un timeout personalizable."""
         self.driver: WebDriver = driver
         self.wait: WebDriverWait = WebDriverWait(driver, timeout)
@@ -126,13 +126,13 @@ class LaraigoPage:
     def send_message(self, message: str) -> List[str]:
         """
         Enviar un mensaje al chatbot y esperar su respuesta.
-        
-        Esta función es atómica: maneja tanto el envío del mensaje como la captura 
+
+        Esta función es atómica: maneja tanto el envío del mensaje como la captura
         de la respuesta del bot en una sola operación.
-        
+
         Args:
             message: El mensaje a enviar
-            
+
         Returns:
             Lista con los textos de las respuestas nuevas del bot
         """
@@ -152,10 +152,6 @@ class LaraigoPage:
 
             # Esperar a que el mensaje del usuario aparezca en el historial
             self.wait.until(lambda _: message in self.get_all_user_messages_text())
-            self.wait.until(lambda _: len(self.get_all_bot_messages()) > msg_bot_count)
-
-            new_bot_messages = self.get_all_bot_messages()[msg_bot_count:]
-            return [msg.text for msg in new_bot_messages]
         except TimeoutException:
             raise TimeoutException(
                 f"No se pudo enviar el mensaje dentro de {self.timeout} segundos."
@@ -163,6 +159,19 @@ class LaraigoPage:
         except NoSuchElementException:
             raise NoSuchElementException(
                 "No se encontraron los elementos necesarios para enviar un mensaje."
+            )
+
+        try:
+            self.wait.until(lambda _: len(self.get_all_bot_messages()) > msg_bot_count)
+            new_bot_messages = self.get_all_bot_messages()[msg_bot_count:]
+            return [msg.text for msg in new_bot_messages]
+        except TimeoutException:
+            raise TimeoutException(
+                f"No se recibió una respuesta del bot dentro de {self.timeout} segundos."
+            )
+        except NoSuchElementException:
+            raise NoSuchElementException(
+                "No se encontraron los mensajes del bot después de enviar el mensaje."
             )
 
     def is_chat_window_visible(self) -> bool:
