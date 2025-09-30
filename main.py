@@ -6,6 +6,8 @@ import os
 import sys
 import argparse
 import logging
+import subprocess
+
 from datetime import datetime
 
 # Add project root to path
@@ -66,27 +68,27 @@ def main():
     else:
         pytest_args.extend(["-m", args.suite])
 
-    # Prepare command to run pytest directly instead of using pytest.main()
-    cmd_args = (
-        [sys.executable, "-m", "pytest"]
-        + pytest_args
-        + ["--html=report.html", "--self-contained-html", "--capture=tee-sys"]
-    )
+    for i in range(10):
+        report_file = f"{timestamp}_report.html"
+        # Prepare command to run pytest directly instead of using pytest.main()
+        cmd_args = (
+            [sys.executable, "-m", "pytest"]
+            + pytest_args
+            + ["--html=" + report_file, "--self-contained-html", "--capture=tee-sys"]
+        )
 
-    # Log command
-    logger.info(f"Running command: {' '.join(cmd_args)}")
+        # Log command
+        logger.info(f"Running command: {' '.join(cmd_args)}")
 
-    # Run pytest as a subprocess
-    import subprocess
+        process = subprocess.run(cmd_args, capture_output=False)
+        exit_code = process.returncode
 
-    process = subprocess.run(cmd_args, capture_output=False)
-    exit_code = process.returncode
+        if exit_code == 0:
+            logger.info(f"Test Batch {i} completed successfully")
+        else:
+            logger.error(f"Test Batch {i} failed with exit code {exit_code}")
 
-    # Log results
-    logger.info(f"Test execution completed with exit code: {exit_code}")
-    logger.info(f"Report: report.html | Logs: {log_file}")
-
-    sys.exit(exit_code)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
 if __name__ == "__main__":
