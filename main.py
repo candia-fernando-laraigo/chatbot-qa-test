@@ -69,7 +69,7 @@ def main():
         pytest_args.extend(["-m", args.suite])
 
     for i in range(10):
-        report_file = f"{timestamp}_report.html"
+        report_file = f"reports/{timestamp}_report.html"
         # Prepare command to run pytest directly instead of using pytest.main()
         cmd_args = (
             [sys.executable, "-m", "pytest"]
