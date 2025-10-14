@@ -49,8 +49,8 @@ class LaraigoPage:
         self.timeout = timeout
 
         try:
-            self.driver.get("https://demos.laraigo.com/QAOmar/Automatizacion.html")
-            # self.driver.get("https://demos.laraigo.com/QAOmar/AutomatizacionTST.html")
+            # self.driver.get("https://demos.laraigo.com/QAOmar/Automatizacion.html")
+            self.driver.get("https://demos.laraigo.com/QAOmar/AutomatizacionTST.html")
         except WebDriverException as e:
             raise WebDriverException(f"No se pudo cargar la página: {e}")
         except Exception as e:

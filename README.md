@@ -1,48 +1,34 @@
 # Chatbot QA Test Automation
 
-A simple yet powerful test automation framework for testing web-based chatbot interfaces using pytest.
+A test automation framework for validating web-based chatbot interfaces using pytest and Selenium WebDriver.
 
-## Project Structure
+## Documentation
 
-```
-chatbot-qa-test/
-├── config/                 # Configuration files
-│   └── config.py           # Main configuration settings
-├── conftest.py             # Pytest configuration and fixtures
-├── pages/                  # Page Object Models
-│   └── chatbot_page.py     # Chatbot interface page object
-├── tests/                  # Test suites organized by functionality
-│   ├── ui/                 # UI component tests
-│   ├── messages/           # Message sending/receiving tests
-│   └── responses/          # Chatbot response validation tests
-├── simple-web/             # Sample web application for testing
-│   ├── index.html          # HTML for the chatbot interface
-│   ├── script.js           # JavaScript for chatbot functionality
-│   └── style.css           # CSS styles for the chatbot
-├── main.py                 # Main test runner script
-├── Makefile                # Build automation
-├── README.md               # Project documentation
-└── TEST_CASES.md           # Test case documentation
-```
+This project includes comprehensive documentation to help you get started:
 
-## Features
+- [User Manual](docs/USER_MANUAL.md) - Step-by-step instructions for using the framework
+- [Complete Documentation](docs/DOCUMENTATION.md) - Detailed technical documentation
+- [Quick Reference](docs/QUICK_REFERENCE.md) - Handy commands and patterns
+- [Execution Flowchart](docs/FLOWCHART.md) - Visual representation of the test execution flow
+- [Test Cases - Laraigo](docs/TEST_CASES_LARAIGO.md) - Specific test cases for Laraigo chatbot
+- [Test Cases - Examples](docs/TEST_CASES_EXAMPLE.md) - Sample test cases
 
-- **Pytest Framework** for powerful, flexible testing
-- **Page Object Model (POM)** design pattern for better maintainability
-- **Parallel test execution** with pytest-xdist
-- **Modular test organization** with pytest markers
-- **Configurable** browser, headless mode, and other settings
+## Key Features
+
+- **Page Object Model** pattern for maintainable test code
+- **Parallel test execution** for faster results
 - **Screenshot capture** on test failures
-- **Detailed HTML reports** using pytest-html
-- **Fixtures** for efficient test setup and teardown
+- **Detailed HTML reports** with response time metrics
+- **Configurable** browser, headless mode, and wait times
+- **Modular architecture** for easy expansion
 
 ## Prerequisites
 
 - Python 3.7 or higher
-- Chrome browser (Firefox and Edge are also supported)
-- Make (optional, for using Makefile commands)
+- Chrome browser (Firefox and Edge also supported)
+- Make (optional, for Makefile commands)
 
-## Setup
+## Quick Start
 
 1. Clone the repository:
    ```bash
@@ -54,77 +40,39 @@ chatbot-qa-test/
    ```bash
    make setup
    ```
-   
-   Or without Make:
+
+3. Run the tests:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
+   make test
    ```
 
-## Running Tests
+## Available Commands
 
-### Using Makefile
-
-Run all tests:
 ```bash
-make test
+make setup          # Set up the environment
+make test           # Run all Laraigo tests
+make test-examples  # Run example tests only
+make report         # Open the latest HTML report
+make clean          # Clean up temporary files
 ```
 
-Run specific test suites:
-```bash
-make test-ui          # UI tests only
-make test-responses   # Response tests only
-```
+Or use the test runner directly:
 
-Clean up:
 ```bash
-make clean
-```
-
-### Without Makefile
-
-Run all tests with the test runner:
-```bash
-python main.py
-```
-
-Run specific test suites with the test runner:
-```bash
-python main.py --suite ui
-python main.py --suite messages
-python main.py --suite responses
-```
-
-Run tests in parallel with the test runner:
-```bash
-python main.py --parallel 3
-```
-
-Run tests directly with pytest:
-```bash
-pytest                           # Run all tests
-pytest -v                        # Verbose output
-pytest -m ui                     # Run UI tests only
-pytest -m responses              # Run response tests only
-pytest -n 3                      # Run in parallel with 3 workers
-pytest --html=report.html        # Generate HTML report
+python main.py              # Run all tests
+python main.py --suite examples  # Run only example tests
+python main.py --parallel 4      # Run with 4 parallel workers
+python main.py -v                # Run with verbose output
 ```
 
 ## Configuration
 
-You can customize test execution by modifying the `config/config.py` file or by setting environment variables:
+You can customize test execution by modifying `config/config.py`:
 
-- `BASE_URL` - The URL of the application to test
-- `BROWSER_TYPE` - Browser to use (chrome, firefox, edge)
-- `HEADLESS` - Run browser in headless mode (True/False)
-- `PARALLEL_EXECUTION` - Number of parallel test executions
-- `IMPLICIT_WAIT` - Default implicit wait time in seconds
-- `EXPLICIT_WAIT` - Default explicit wait time in seconds
-- `TAKE_SCREENSHOT_ON_FAILURE` - Take screenshot on test failure (True/False)
+- Browser type and headless mode
+- Base URL for testing
+- Wait times and timeouts
+- Screenshot settings
+- Parallel execution settings
 
-## Adding New Tests
-
-1. Create a new test file in the appropriate directory under `tests/`
-2. Use the Page Object Model from `pages/chatbot_page.py`
-3. Run your tests using the main test runner
+See the [Complete Documentation](docs/DOCUMENTATION.md) for more details on configuration options.
