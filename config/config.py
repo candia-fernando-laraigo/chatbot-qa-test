@@ -17,7 +17,7 @@ HEADLESS: bool = True  # Set to False for debugging visual issues
 # Test execution configuration
 PYTEST_WORKERS: int = 16  # Number of parallel test executions
 IMPLICIT_WAIT: int = 60  # Default wait time in seconds
-EXPLICIT_WAIT: int = 60  # Default explicit wait time in seconds
+EXPLICIT_WAIT: int = 10  # Default explicit wait time in seconds
 
 # Test data
 TEST_DATA_DIR: str = os.path.join(os.path.dirname(__file__), "../test_data")
