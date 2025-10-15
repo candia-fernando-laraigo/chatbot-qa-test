@@ -8,7 +8,7 @@ import time
 from pages.laraigo_page import LaraigoPage
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_open_chat_window(driver):
     """Test que la ventana del chat se abre correctamente."""
     laraigo_page = LaraigoPage(driver)
@@ -25,7 +25,7 @@ def test_open_chat_window(driver):
     ), "La ventana de chat debería estar visible después de abrirla"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_enter_key_send(driver):
     """Test que la tecla Enter funciona para enviar mensajes."""
     laraigo_page = LaraigoPage(driver)
@@ -44,7 +44,7 @@ def test_enter_key_send(driver):
     ), "El mensaje enviado con Enter debería aparecer en el chat"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_bot_response(driver, test_data):
     """Test que el bot responde a los mensajes."""
     laraigo_page = LaraigoPage(driver)
@@ -70,7 +70,7 @@ def test_bot_response(driver, test_data):
     assert len(bot_messages) > 0, "Debería haber al menos un mensaje del bot"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_refresh_chat(driver):
     """Test que verifica que el botón de refrescar el chat funciona correctamente."""
     # Abrir el chat
@@ -106,7 +106,7 @@ def test_refresh_chat(driver):
     ), "El número de mensajes del bot debería ser cero después de refrescar"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_attachments_menu(driver):
     """Test que verifica la funcionalidad del menú de adjuntos."""
     # Abrir el chat
@@ -135,7 +135,7 @@ def test_attachments_menu(driver):
     ), "El menú de adjuntos debería estar cerrado después de cerrarlo"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_multiple_messages_conversation(driver, test_data):
     """Test que verifica una conversación con múltiples mensajes."""
     # Abrir el chat
@@ -179,7 +179,7 @@ def test_multiple_messages_conversation(driver, test_data):
     ), "Debería haber al menos una respuesta del bot por cada mensaje del usuario"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_reset_chat_state(driver):
     """Test que demuestra cómo reiniciar la instancia del chatbot para un test específico."""
     # Primero realizamos algunas acciones que podrían afectar el estado
@@ -212,7 +212,7 @@ def test_reset_chat_state(driver):
     ), f"El mensaje '{msg_before_reset}' debería estar en el chat. Mensajes actuales: {user_messages}"
 
 
-@pytest.mark.laraigo
+@pytest.mark.laraigo_ui
 def test_idle_message_visibility(driver):
     """Test que verifica la visibilidad y el ocultamiento del mensaje de inactividad."""
     # Este test asume que el mensaje de inactividad aparece después de un tiempo

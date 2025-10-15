@@ -1,227 +1,370 @@
 # Laraigo Chatbot QA Test
 
-Automatización de pruebas funcionales, de regresión y de estrés para chatbots, con un enfoque en el bot de Laraigo y un entorno de ejemplo controlado. Incluye ejecución paralela, reportes HTML auto-contenidos, logging y capturas de pantalla en fallos.
+> Automatización de pruebas funcionales, regresión y estrés para chatbots, centrado en Laraigo con un entorno de ejemplo local. Incluye ejecución paralela, reportes HTML auto-contenidos con datos por test, logging y capturas en fallos.
 
 ![Visión general de la ejecución y resultados](assets/response_example.png)
 
-## 1) Introducción y objetivos
+<div align="center">
 
-Probar un chatbot manualmente es lento, poco repetible y no contempla escenarios concurrentes (muchos usuarios a la vez). Este proyecto resuelve ese problema con:
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Selenium](https://img.shields.io/badge/Selenium-4.x-green.svg?logo=selenium&logoColor=white)](https://www.selenium.dev/)
+[![Pytest](https://img.shields.io/badge/Pytest-7.x-red.svg?logo=pytest&logoColor=white)](https://docs.pytest.org/)
 
-- Automatización de interacciones end-to-end vía Selenium.
-- Paralelización masiva con pytest-xdist para pruebas de carga/estrés.
-- Validación de contenido de respuestas con aserciones basadas en texto/keywords.
-- Reportes HTML enriquecidos y logs por ejecución.
+</div>
 
-También se provee un “entorno simple” (`simple-web/`) para validar rápidamente la infraestructura (POM, fixtures, sincronización) sin depender de entornos externos.
+## Tabla de Contenidos
 
+- [Introducción y objetivos](#-introducción-y-objetivos)
+- [Páginas bajo prueba](#-páginas-bajo-prueba)
+- [Arquitectura y cómo funciona](#-arquitectura-y-cómo-funciona)
+- [Requisitos](#-requisitos)
+- [Instalación y ejecución rápida](#-instalación-y-ejecución-rápida)
+- [Ejecución avanzada](#-ejecución-avanzada-suites-y-paralelismo)
+- [Configuración](#-configuración)
+- [Estructura del proyecto](#-estructura-del-proyecto)
+- [Detalles de implementación](#-detalles-de-implementación-resumen-técnico)
+- [Reportes, logs y evidencias](#-reportes-logs-y-evidencias)
+- [Extender el proyecto](#-extender-el-proyecto)
+- [Solución de problemas](#-solución-de-problemas)
+
+## Introducción y objetivos
+
+Probar manualmente un chatbot es lento y poco repetible. Este proyecto aporta:
+
+- Interacciones **end-to-end** con Selenium
+- Paralelización con **pytest-xdist** para carga/estrés
+- Validación de contenido con aserciones textuales
+- Reportes HTML enriquecidos y logs por ejecución
+
+Se incluye un "entorno simple" (`simple-web/`) para validar rápidamente la infraestructura (POM, fixtures, sincronización) sin depender de servicios externos.
+
+<div align="center">
+  
 ![Chat simple en acción](assets/chatbot_page.png)
+  
+</div>
 
-## 2) Páginas bajo prueba
+## Páginas bajo prueba
 
-- Producción Laraigo: https://demos.laraigo.com/QAOmar/Automatizacion.html
-- Testing Laraigo: https://demos.laraigo.com/QAOmar/AutomatizacionTST.html
+| Entorno | URL |
+|---------|-----|
+| **Producción Laraigo** | [https://demos.laraigo.com/QAOmar/Automatizacion.html](https://demos.laraigo.com/QAOmar/Automatizacion.html) |
+| **Testing Laraigo** | [https://demos.laraigo.com/QAOmar/AutomatizacionTST.html](https://demos.laraigo.com/QAOmar/AutomatizacionTST.html) |
 
-Ambas comparten una UI similar. Adicionalmente, este repo incluye una página local de ejemplo (`simple-web/index.html`) para pruebas rápidas, usada por defecto.
+> El repo también incluye una página local (`simple-web/index.html`) para pruebas rápidas.
 
-## 3) Arquitectura y cómo funciona
+## Arquitectura y cómo funciona
 
-Componentes clave:
+### Componentes clave:
 
-- Page Object Model (POM)
-   - `pages/chatbot_page.py`: POM de la página simple local. Expone métodos como `open_chat()`, `send_message()`, `wait_for_bot_response()`, etc.
-   - `pages/laraigo_page.py`: POM específico para Laraigo (apertura/cierre/refresh, envío, adjuntos, ubicación e “idle message”).
-   - Ambos encapsulan selectores y esperas explícitas, evitando “flakiness”.
+#### Page Object Model (POM)
+- **`pages/chatbot_page.py`**: POM del chat simple local
+  - Métodos: `open_chat()`, `send_message()`, `wait_for_bot_response()`, etc.
+- **`pages/laraigo_page.py`**: POM específico para Laraigo
+  - Funcionalidades: abrir/cerrar/refresh, envío, adjuntos, ubicación, mensaje de inactividad
+  - Usa `WebDriverWait` extensivo y selectores de la UI Laraigo (`chat-open-chatweb`, `chat-history-refresh`, etc.)
 
-- Fixtures y configuración Pytest
-   - `conftest.py` (simplificado): crea el `WebDriver` según `config/config.py` y define sólo fixtures esenciales: `driver`, `wait`, `test_data`. Enriquecimiento mínimo del reporte HTML y screenshot automático en fallos.
-   - Marcadores de suite: `@pytest.mark.examples` (entorno simple) y `@pytest.mark.laraigo` (entorno Laraigo).
+#### Fixtures y configuración Pytest
+- **`conftest.py`**:
+  - Crea `WebDriver` según `config/config.py`
+  - Define fixtures: `driver` y `test_data`
+  - Enriquecimiento del reporte HTML y screenshot automático en fallos
+- **Marcadores**: 
+  - `@pytest.mark.examples` (entorno simple)
+  - `@pytest.mark.laraigo` (entorno Laraigo)
 
-- Runner y paralelización
-   - `main.py`: ejecuta pytest como subproceso con `-n <workers>` (xdist) y repeticiones con `--count` vía `pytest-repeat`, generando un reporte HTML por ejecución.
-   - `Makefile`: crea venv, instala dependencias y ejecuta la suite deseada con un solo comando.
+#### Runner y paralelización
+- **`main.py`**:
+  - Invoca pytest con `-n <workers>` (xdist)
+  - Repeticiones con `--count` (pytest-repeat)
+  - Genera un reporte HTML por ejecución
+- **`Makefile`**:
+  - Prepara venv, instala dependencias
+  - Permite correr suites
+  - Incluye `make report` para abrir el último reporte
 
-- Reportes y logs
-   - HTML por ejecución en `reports/<timestamp>_report.html` (self-contained), con CSS extra y bloques de datos por test.
-   - Logs detallados en `logs/`, gestionados por `utils/logger.py` (niveles INFO/DEBUG/ERROR y eventos de test).
-   - Screenshots automáticos en `screenshots/` cuando un test falla (si está habilitado).
+#### Reportes y logs
+- **HTML por ejecución** en `reports/<timestamp>_report.html`
+  - Datos por test integrados
+  - En fallos, screenshot embebido
+- **Logs** en `logs/` gestionados por `utils/logger.py`
+
+<div align="center">
 
 ![Reporte HTML con resultados y detalle](assets/report_page.png)
 
-Flujo de ejecución (alto nivel):
+</div>
 
-1) `make test` -> prepara venv y llama a `python main.py --suite laraigo` (o `examples`).
-2) `main.py` arma argumentos de pytest y habilita paralelismo con xdist.
-3) `conftest.py` levanta el navegador (headless por defecto) y abre `BASE_URL`.
-4) El test usa el POM correspondiente para interactuar con el chat y realizar aserciones.
-5) Se generan reportes, logs y, si corresponde, screenshots.
+### Flujo de ejecución (alto nivel):
 
-## 4) Requisitos
+1. `make test` → prepara venv y llama a `python main.py --suite laraigo` (o `examples`)
+2. `main.py` arma argumentos de pytest y habilita paralelismo con xdist
+3. `conftest.py` levanta el navegador (headless por defecto)
+4. Los tests usan el POM para interactuar con el chat y validar
+5. Se generan reportes, logs y, si corresponde, screenshots
 
-- Python 3.13.7 (recomendado). Funciona en 3.10+ en la mayoría de entornos.
-- Google Chrome (recomendado) o Firefox/Edge. Los drivers se gestionan con `webdriver-manager` automáticamente.
-- Linux/macOS/Windows. En Linux, para Chrome headless se recomiendan flags ya incluidos.
+## Requisitos
 
-## 5) Instalación y ejecución rápida
+| Componente | Detalle |
+|------------|---------|
+| **Python** | 3.10+ (recomendado 3.13.7) |
+| **Navegador** | Google Chrome (recomendado), Firefox, Edge |
+| **Sistema Operativo** | Linux, macOS, Windows |
+| **Principales Librerías** | `selenium`, `pytest`, `pytest-html`, `pytest-xdist`, `webdriver-manager`, `pytest-repeat` |
 
-Con un solo comando:
+> Los drivers de navegadores se gestionan automáticamente con `webdriver-manager`. En Linux, Chrome headless usa flags ya incluidos.
+
+## Instalación y ejecución rápida
+
+### Instalación con un solo comando:
 
 ```bash
 make
 ```
 
-Ese comando:
-- Crea y actualiza un entorno virtual (`venv/`).
-- Instala dependencias de `requirements.txt`.
-- Ejecuta la suite por defecto (`--suite laraigo`).
+<details>
+<summary><b>¿Qué hace este comando?</b></summary>
 
-Abrir el reporte HTML más reciente:
+- Crea/actualiza un entorno virtual (`venv/`)
+- Instala dependencias de `requirements.txt`
+- Ejecuta la suite por defecto (Laraigo)
+</details>
+
+### Abrir el reporte HTML más reciente:
 
 ```bash
 make report
 ```
 
-> Nota: en Linux usa `xdg-open`, en macOS `open`. También puedes abrir manualmente el archivo generado en `reports/`.
+## Ejecución avanzada (suites y paralelismo)
 
-## 6) Ejecución avanzada (suites y paralelismo)
-
-Ejecutar suite de ejemplos (chat simple local):
+### Suite de ejemplos (chat simple local):
 
 ```bash
 ./venv/bin/python main.py --suite examples -v
 ```
 
-Ejecutar suite Laraigo con 8 workers:
+### Suite Laraigo con 8 workers:
 
 ```bash
 ./venv/bin/python main.py --suite laraigo --parallel 8 -vv
 ```
 
-Ejecutar todos los tests del repo (sin marcador):
+### Todos los tests del repo (sin marcador):
 
 ```bash
 ./venv/bin/python main.py --suite all -v
 ```
 
-Parámetros útiles de `main.py`:
-- `--suite`: `all` | `examples` | `laraigo` (usa marcadores de pytest).
-- `--parallel`: número de procesos en paralelo (por defecto toma `config.PYTEST_WORKERS`).
-- `--count`: número de repeticiones en una sola ejecución (requiere `pytest-repeat`).
-- `-v/-vv/-vvv`: verbosidad.
+### Parámetros útiles de `main.py`:
 
-> Consejo: ajusta `--parallel` según núcleos disponibles. Para estrés, mantén alto; para debugging, usa 1–2.
+| Parámetro | Descripción | Valores posibles |
+|-----------|-------------|-----------------|
+| `--suite` | Conjunto de tests a ejecutar | `all` \| `examples` \| `laraigo` |
+| `--parallel` | Procesos en paralelo | Número (default: `config.PYTEST_WORKERS`) |
+| `--count` | Repeticiones en una ejecución | Número (requiere `pytest-repeat`) |
+| `-v/-vv/-vvv` | Nivel de verbosidad | - |
 
-## 7) Configuración
+> Ajustar `--parallel` según núcleos disponibles. Para estrés, usa un valor alto; para debugging, 1-2.
+
+## Configuración
 
 Archivo: `config/config.py`
 
-- `BASE_URL`: destino bajo prueba. Por defecto apunta a `simple-web/index.html` vía `file://`.
-   - Para probar Laraigo, cambia a:
-      - Producción: `BASE_URL = "https://demos.laraigo.com/QAOmar/Automatizacion.html"`
-      - Testing: `BASE_URL = "https://demos.laraigo.com/QAOmar/AutomatizacionTST.html"`
-- `BROWSER_TYPE`: `chrome` | `firefox` | `edge`.
-- `HEADLESS`: `True`/`False` (activa modo sin UI para CI/estrés).
-- `PYTEST_WORKERS`: número de procesos paralelos.
-- `IMPLICIT_WAIT` y `EXPLICIT_WAIT`: tiempos de espera.
-- `SCREENSHOT_DIR` y `TAKE_SCREENSHOT_ON_FAILURE`: evidencias visuales.
+| Parámetro | Descripción | Valores |
+|-----------|-------------|---------|
+| `PAGE_URL` | Destino bajo prueba | Default: `LARAIGO_CHATBOT_TEST` |
+| `PAGE_TIMEOUT` | Timeout general para esperas | Segundos |
+| `BROWSER_TYPE` | Navegador a utilizar | `chrome` \| `firefox` \| `edge` |
+| `HEADLESS` | Modo sin interfaz gráfica | `True` \| `False` |
+| `PYTEST_WORKERS` | Procesos paralelos por defecto | Número |
+| `SCREENSHOT_DIR` | Directorio para capturas | Ruta |
+| `TAKE_SCREENSHOT_ON_FAILURE` | Captura en fallos | `True` \| `False` |
 
-![Captura del chat simple y botón de apertura](assets/chatbot_page.png)
+#### URLs predefinidas:
+- Producción: `LARAIGO_CHATBOT_PROD = "https://demos.laraigo.com/QAOmar/Automatizacion.html"`
+- Testing: `LARAIGO_CHATBOT_TEST = "https://demos.laraigo.com/QAOmar/AutomatizacionTST.html"`
 
-## 8) Estructura del proyecto
+> Si quieres usar el entorno local simple, ajusta `PAGE_URL` para apuntar al archivo `simple-web/index.html` vía `file://` o crea una opción dedicada.
+
+## Estructura del proyecto
+
+<details open>
+<summary><b>Estructura de archivos y directorios</b></summary>
 
 ```
 chatbot-qa-test/
-├─ main.py                 # Runner que invoca pytest (paralelo, múltiples batches)
-├─ conftest.py             # Fixtures mínimos (driver, wait, test_data), WebDriver y screenshots
+├─ main.py                       # Runner para pytest (paralelo, repeticiones)
+├─ conftest.py                   # Fixtures (driver, test_data), WebDriver, reporte enriquecido
 ├─ config/
-│  └─ config.py            # Parámetros de ejecución y entorno
+│  └─ config.py                  # Parámetros de ejecución y entorno
 ├─ pages/
-│  ├─ chatbot_page.py      # POM para el chat simple (simple-web)
-│  └─ laraigo_page.py      # POM específico de Laraigo (adjuntos, etc.)
+│  ├─ chatbot_page.py            # POM simple-web
+│  └─ laraigo_page.py            # POM Laraigo
 ├─ tests/
-│  ├─ test_chatbot_ui.py           # UI básica sobre simple-web
-│  ├─ test_chatbot_responses.py    # Respuestas sobre simple-web
-│  ├─ test_laraigo_responses.py    # Validaciones específicas Laraigo
-│  └─ test_laraigo_ui.py           # (esqueleto comentado)
-├─ simple-web/              # Mini sitio local para validar infraestructura
-│  ├─ index.html
-│  ├─ script.js
-│  └─ style.css
+│  ├─ test_chatbot_ui.py         # UI básica simple-web
+│  ├─ test_chatbot_responses.py  # Respuestas simple-web
+│  └─ test_laraigo_responses.py  # Validaciones Laraigo
+├─ simple-web/                   # Mini sitio local
 ├─ utils/
-│  └─ logger.py             # Utilidades de logging (opcional)
-├─ assets/style.css         # Estilos extra para reportes pytest-html
-├─ reports/                 # Reportes HTML generados
-├─ screenshots/             # Evidencias en caso de fallo
-├─ docs/                    # Documentación de casos de prueba
-├─ requirements.txt         # Dependencias
-└─ Makefile                 # Tareas de setup/ejecución
+│  └─ logger.py                  # Logging de ejecución
+├─ assets/                       # Imágenes y CSS para docs/reportes
+├─ reports/                      # Reportes HTML generados
+├─ screenshots/                  # Evidencias en fallo
+├─ docs/                         # Documentación de casos
+├─ requirements.txt              # Dependencias
+└─ Makefile                      # Tareas de setup/ejecución
 ```
+</details>
 
-## 9) Detalles de implementación (resumen técnico)
+## Detalles de implementación (resumen técnico)
 
-- POM (Page Object Model)
-   - `ChatbotPage` (simple-web): encapsula selectores (`CHAT_TOGGLE_BUTTON`, `CHAT_INPUT`, `SEND_BUTTON`, etc.), espera explícita a elementos, envío de mensaje con botón o tecla Enter y `wait_for_bot_response()` que sincroniza por aparición de un nuevo mensaje del bot.
-   - `LaraigoPage`: expone un conjunto más amplio de acciones (abrir/cerrar/refresh; manejo de adjuntos: imagen, archivo, audio, video; compartir ubicación; manejo de mensaje de inactividad). Usa `WebDriverWait` extensivo y selectores orientados a la UI de Laraigo (`chat-open-chatweb`, `chat-history-refresh`, etc.).
+### Page Objects Models (POMs)
 
-- Fixtures clave (`conftest.py`)
-   - `driver`: instancia el navegador según `BROWSER_TYPE` + `webdriver-manager`. Abre `BASE_URL` por test y cierra al finalizar.
-   - `wait`: `WebDriverWait` con `EXPLICIT_WAIT`.
-   - `test_data`: helper para adjuntar al reporte HTML datos de cada test (mensaje enviado, respuesta, tiempos, etc.).
-   - Hook `pytest_runtest_makereport`: agrega un bloque HTML con los datos y screenshot (si falla), manteniendo el archivo de reporte auto-contenido.
+<details>
+<summary><b>ChatbotPage</b> (chat simple local)</summary>
 
-- Runner (`main.py`)
-   - Construye argumentos de pytest, habilita `-n <workers>` (xdist), añade `--count <N>` (si quieres repeticiones en una sola ejecución), y genera un reporte HTML auto-contenido por ejecución en `reports/`.
+- **Selectores principales**:
+  - `CHAT_TOGGLE_BUTTON`
+  - `CHAT_INPUT`
+  - `SEND_BUTTON`
+- **Funcionalidad**:
+  - Envío de mensajes con botón o tecla Enter
+  - `wait_for_bot_response()` sincroniza por aparición de nuevo mensaje
+</details>
 
-- Validaciones (tests)
-   - Suite “examples”: valida UI y respuestas del chatbot local (saludos, precios, productos/servicios, contacto), incluyendo tiempos de respuesta y flujo multi-mensaje.
-   - Suite “laraigo”: valida saludos, consultas de membresía y fuera de alcance, con expectativas específicas (“Hola Blanquiazul…”, “Gracias por contactarte…”, “Lo lamento…”), registrando tiempos y evidencias.
+<details>
+<summary><b>LaraigoPage</b> (específico para Laraigo)</summary>
 
-## 10) Reportes, logs y evidencias
+- **Funcionalidad**:
+  - Abrir/cerrar/refresh chat
+  - Envío de adjuntos (imagen/archivo/audio/video)
+  - Compartir ubicación
+  - Manejo de mensaje de inactividad
+  - Utilidades para obtener mensajes: `get_all_*_messages[_text]`
+</details>
 
-- Reporte HTML por batch en `reports/`. Contiene:
-   - Resumen (passed/failed/skipped) + tiempos.
-   - Detalle por test con bloques HTML de “Test Data” inyectados desde `conftest.py`.
-   - Screenshots embebidos (si se configuró y ocurrió fallo).
-- Logs por ejecución en `logs/test_run_<timestamp>.log` y/o `utils/logger.py` con `TestLogger`.
+### Fixtures y configuración
+
+<details>
+<summary><b>Fixtures clave</b> (conftest.py)</summary>
+
+- **`driver`**:
+  - Instancia navegador según `BROWSER_TYPE` usando `webdriver-manager`
+- **`test_data`**:
+  - Adjunta al reporte HTML datos del test (mensaje, respuesta, tiempos)
+- **Hooks**:
+  - `pytest_runtest_makereport`: agrega bloque HTML con datos y screenshot en fallos
+  - `pytest_terminal_summary`: inserta resumen JSON al final del HTML
+</details>
+
+### Runner y ejecución
+
+<details>
+<summary><b>Runner</b> (main.py)</summary>
+
+- Construye argumentos pytest
+- Habilita `-n <workers>` para paralelismo
+- Configura `--count <N>` para repeticiones
+- Genera reporte auto-contenido en `reports/`
+</details>
+
+### Validaciones (tests)
+
+<details>
+<summary><b>Suite "examples"</b> (chat simple)</summary>
+
+- Validaciones de saludos, precios, productos/servicios, contacto
+- Registra tiempos y múltiples mensajes en conversación
+</details>
+
+<details>
+<summary><b>Suite "laraigo"</b> (chatbot Laraigo)</summary>
+
+- Saludos deben iniciar con "Hola Blanquiazul…"
+- Consultas de membresía con "Gracias por contactarte…"
+- Mensajes fuera de alcance con "Lo lamento…"
+- Guarda tiempos y última respuesta recibida
+</details>
+
+## Reportes, logs y evidencias
+
+### Reportes HTML
+
+<details open>
+<summary><b>Contenido de reportes</b></summary>
+
+- **Ubicación**: `reports/<timestamp>_report.html`
+- **Características**:
+  - Resumen de resultados y tiempos de ejecución
+  - Bloques "Test Data" con mensaje enviado, respuesta, response time y duración
+  - En fallos: screenshot embebido y error detallado
+</details>
+
+### Logs
+
+- **Ubicación**: `logs/test_run_<timestamp>.log`
+
+<div align="center">
 
 ![Reporte HTML con test expandido y evidencia](assets/report_page.png)
 
-## 11) Extender el proyecto
+</div>
 
-- Agregar un nuevo caso de prueba:
-   1. Crear archivo en `tests/` o sumar funciones a uno existente.
-   2. Usar el POM adecuado (`ChatbotPage` o `LaraigoPage`).
-   3. Usar `@pytest.mark.examples` o `@pytest.mark.laraigo` para agrupar suites.
-   4. Guardar datos con `test_data(sent_message=..., response_text=..., response_time=...)` si quieres enriquecer el reporte.
+## Extender el proyecto
 
-- Agregar validaciones del contenido:
-   - Preferir aserciones robustas (incluir `startswith`, `in`, normalización `lower()`, regex si aplica).
-   - Añadir esperas explícitas al POM antes de leer el DOM (evita condiciones de carrera).
+### Nuevo caso de prueba
 
-- Soportar otro navegador:
-   - Cambiar `BROWSER_TYPE` en `config/config.py` y ejecutar. Los drivers se gestionan automáticamente.
+<details open>
+<summary><b>Pasos para añadir nuevos tests</b></summary>
 
-## 12) Solución de problemas
+1. Crear archivo en `tests/` o sumar funciones a los existentes
+2. Usar marcadores `@pytest.mark.examples` o `@pytest.mark.laraigo`
+3. Reutilizar fixtures `driver` y `test_data`
+4. Guardar datos con `test_data(sent_message=..., response_text=..., response_time=...)` para enriquecer el reporte
+</details>
 
-- Error al iniciar el navegador (driver):
-   - Verifica conexión a internet (descarga de `webdriver-manager`).
-   - Asegura que Chrome/Firefox/Edge estén instalados.
+### Validaciones de contenido
 
-- Fallas sólo en headless:
-   - Cambia `HEADLESS=False` para visualizar.
-   - En Linux, los flags `--no-sandbox` y `--disable-dev-shm-usage` ya están activados en Chrome.
+- Preferir `startswith`, `in`, normalización `lower()`, o regex
+- Añadir esperas explícitas en POM antes de leer el DOM
 
-- No se ve el reporte:
-   - Abre manualmente el último archivo en `reports/`.
-   - Revisa permisos del sistema de archivos.
+### Soporte de navegador
 
-- Tiempos de respuesta altos o timeouts:
-   - Incrementa el parametro timeout en los __init__ del POM.
-   - Reduce `--parallel`.
+- Cambiar `BROWSER_TYPE` en `config/config.py`
+- Los drivers se gestionan automáticamente con webdriver-manager
 
-## 13) Créditos y versiones
+## ⚠️ Solución de problemas
 
-- Python: 3.13.7 (recomendado)
-- Librerías clave:
-   - selenium, pytest, pytest-html, pytest-xdist, webdriver-manager
-- Autoría: Fernando Candia
+<details>
+<summary><b>Error al iniciar el navegador (driver)</b></summary>
+
+- ✅ Verifica conexión a internet (para descarga de `webdriver-manager`)
+- ✅ Asegúrate que Chrome/Firefox/Edge estén correctamente instalados
+</details>
+
+<details>
+<summary><b>Fallos sólo en modo headless</b></summary>
+
+- ✅ Cambia `HEADLESS=False` en config.py para visualizar la ejecución
+- ✅ En Linux, los flags `--no-sandbox` y `--disable-dev-shm-usage` ya están activos
+</details>
+
+<details>
+<summary><b>No se ve el reporte</b></summary>
+
+- ✅ Usa `make report` para abrir automáticamente el último reporte
+- ✅ Abre manualmente el último archivo generado en la carpeta `reports/`
+</details>
+
+<details>
+<summary><b>Timeouts/tardanza</b></summary>
+
+- ✅ Ajusta `PAGE_TIMEOUT` en `config/config.py`
+- ✅ Reduce `--parallel` para entornos con recursos limitados
+</details>
+
+---
+
+**Autoría:** [Fernando Candia](https://github.com/candia-fernando-laraigo)
+

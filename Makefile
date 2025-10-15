@@ -25,8 +25,14 @@ test-examples: setup
 	@$(VENV)/bin/python main.py --suite examples
 
 report:
-	# Detectar y abrir el reporte HTML generado
-	@if [ -f report.html ]; then xdg-open report.html || open report.html; else echo "No report.html found!"; fi
+    # Abrir el reporte HTML más reciente generado en reports/
+	@if [ -d reports ] && ls reports/*.html >/dev/null 2>&1; then \
+		latest_report=$$(ls -t reports/*.html | head -n 1); \
+		echo "Abriendo $$latest_report"; \
+		xdg-open "$$latest_report" 2>/dev/null || open "$$latest_report" 2>/dev/null || echo "Reporte generado en: $$latest_report"; \
+	else \
+		echo "No se encontraron reportes HTML en la carpeta reports/"; \
+	fi
 
 # Clean up
 clean:

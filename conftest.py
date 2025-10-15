@@ -60,13 +60,6 @@ def driver(request):
 TEST_DATA = {}
 test_logger = TestLogger()
 
-
-@pytest.fixture(scope="function")
-def logger():
-    """Fixture to provide access to the test logger from tests."""
-    return test_logger
-
-
 @pytest.fixture(scope="function")
 def test_data(request):
     """Fixture to store test data for reporting."""
