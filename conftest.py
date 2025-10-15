@@ -3,7 +3,6 @@ Pytest configuration and fixtures.
 """
 
 import os
-import sys
 import pytest
 import json
 import base64
@@ -20,18 +19,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from pytest_html import extras
 
-# Import test logger
 from utils.logger import TestLogger
-
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from config.config import (
     BROWSER_TYPE,
     HEADLESS,
-    IMPLICIT_WAIT,
-    EXPLICIT_WAIT,
-    BASE_URL,
     SCREENSHOT_DIR,
     TAKE_SCREENSHOT_ON_FAILURE,
 )
@@ -44,7 +35,9 @@ def pytest_configure(config):
         os.makedirs(SCREENSHOT_DIR)
 
     config.addinivalue_line("markers", "examples: mark a test as an example test")
-    config.addinivalue_line("markers", "laraigo: mark a test as a Laraigo-specific test")
+    config.addinivalue_line(
+        "markers", "laraigo: mark a test as a Laraigo-specific test"
+    )
 
     # Add custom CSS via environment variable which pytest-html will pick up
     css = """
@@ -59,39 +52,13 @@ def pytest_configure(config):
 @pytest.fixture(scope="function")
 def driver(request):
     """Fixture for WebDriver."""
-    # Setup
-    # print(f"\nSetting up test: {request.node.name}")
     driver = _setup_driver()
-    driver.implicitly_wait(IMPLICIT_WAIT)
-    driver.get(BASE_URL)
-
-    # Yield driver to test
     yield driver
-
-    # Teardown
-    # print(f"Closing browser for test: {request.node.name}")
     driver.quit()
 
 
-@pytest.fixture
-def wait(driver: WebDriver):
-    """Fixture for WebDriverWait."""
-    return WebDriverWait(driver, EXPLICIT_WAIT)
-
-
-# Storage for test data
 TEST_DATA = {}
-
-# Create a test logger instance
 test_logger = TestLogger()
-
-
-@pytest.fixture(scope="function")
-def chatbot_page(driver: WebDriver):
-    """Fixture for ChatbotPage."""
-    from pages.chatbot_page import ChatbotPage
-
-    return ChatbotPage(driver)
 
 
 @pytest.fixture(scope="function")
@@ -103,6 +70,7 @@ def logger():
 @pytest.fixture(scope="function")
 def test_data(request):
     """Fixture to store test data for reporting."""
+
     def _save_data(sent_message=None, response_text=None, response_time=None):
         test_id = request.node.nodeid
         if test_id in TEST_DATA:
@@ -112,7 +80,7 @@ def test_data(request):
                 TEST_DATA[test_id]["response_text"] = response_text
             if response_time is not None:
                 TEST_DATA[test_id]["response_time"] = response_time
-    
+
     return _save_data
 
 
@@ -153,18 +121,21 @@ def pytest_runtest_makereport(item, call):
         if report.when == "call":
             duration = time.time() - TEST_DATA[test_id]["start_time"]
             TEST_DATA[test_id]["duration"] = duration
-            
+
             # Include response_time in the HTML report if it exists
             if "response_time" in TEST_DATA[test_id]:
-                TEST_DATA[test_id]["response_time_ms"] = round(TEST_DATA[test_id]["response_time"] * 1000, 2)
-            
+                TEST_DATA[test_id]["response_time_ms"] = round(
+                    TEST_DATA[test_id]["response_time"] * 1000, 2
+                )
+
             # Log test completion with duration and status
             status = "PASS" if report.passed else "FAIL"
             error_msg = None
             if not report.passed:
                 error_msg = (
                     report.longrepr.reprcrash.message
-                    if hasattr(report, "longrepr") and hasattr(report.longrepr, "reprcrash")
+                    if hasattr(report, "longrepr")
+                    and hasattr(report.longrepr, "reprcrash")
                     else "Test failed without detailed error message"
                 )
             test_logger.log_test_end(test_id, status, duration, error_msg)
@@ -226,11 +197,11 @@ def pytest_runtest_makereport(item, call):
     if report.when == "call" and report.passed and test_id in TEST_DATA:
         # Create a more user-friendly HTML report
         test_data_html = '<div class="test-data"><h3>Test Data</h3><table style="width:100%; border-collapse: collapse;">'
-        
+
         # Add message and response rows if they exist
         if TEST_DATA[test_id].get("sent_message"):
             test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Sent Message:</td><td style="padding:8px; border:1px solid #ddd;">{TEST_DATA[test_id]["sent_message"]}</td></tr>'
-        
+
         if TEST_DATA[test_id].get("response_text"):
             # Format the response text (could be a list or string)
             response = TEST_DATA[test_id]["response_text"]
@@ -239,25 +210,23 @@ def pytest_runtest_makereport(item, call):
             else:
                 response_formatted = str(response)
             test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Bot Response:</td><td style="padding:8px; border:1px solid #ddd;">{response_formatted}</td></tr>'
-        
+
         # Add response time if it exists
         if TEST_DATA[test_id].get("response_time"):
             response_time_ms = round(TEST_DATA[test_id]["response_time"] * 1000, 2)
             test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Response Time:</td><td style="padding:8px; border:1px solid #ddd;">{response_time_ms} ms</td></tr>'
-        
+
         # Add test duration
         if TEST_DATA[test_id].get("duration"):
             duration_sec = round(TEST_DATA[test_id]["duration"], 2)
             test_data_html += f'<tr><td style="padding:8px; border:1px solid #ddd; font-weight:bold;">Test Duration:</td><td style="padding:8px; border:1px solid #ddd;">{duration_sec} sec</td></tr>'
-        
-        test_data_html += '</table>'
-        
+
+        test_data_html += "</table>"
+
         # Add raw data in a collapsible section
         test_data_html += f'<details><summary style="margin-top:10px; cursor:pointer;">Raw Test Data</summary><pre>{json.dumps(TEST_DATA[test_id], indent=2)}</pre></details></div>'
-        
-        report.extras = [
-            extras.html(test_data_html)
-        ]
+
+        report.extras = [extras.html(test_data_html)]
 
 
 @pytest.hookimpl(hookwrapper=True)

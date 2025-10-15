@@ -3,11 +3,10 @@ Page Object Model para la interfaz del chatbot Laraigo.
 Proporciona métodos para interactuar con los elementos específicos del chatbot de Laraigo.
 """
 
-from typing import List, Optional
+from typing import List
 from selenium.common.exceptions import (
     TimeoutException,
     NoSuchElementException,
-    ElementNotVisibleException,
     WebDriverException,
 )
 from selenium.webdriver.common.by import By
@@ -18,6 +17,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
 import time
 
+from config.config import PAGE_URL, PAGE_TIMEOUT
 
 class LaraigoPage:
     """Page Object Model para la interfaz del chatbot Laraigo."""
@@ -42,15 +42,14 @@ class LaraigoPage:
     ATTACHMENT_LOCATION = (By.ID, "input-location-button")
     CHAT_IDLE_MESSAGE = (By.ID, "chat-idle-message")
 
-    def __init__(self, driver: WebDriver, timeout: int = 300):
+    def __init__(self, driver: WebDriver, timeout: int = PAGE_TIMEOUT):
         """Inicializar la página con el WebDriver proporcionado y un timeout personalizable."""
         self.driver: WebDriver = driver
         self.wait: WebDriverWait = WebDriverWait(driver, timeout)
         self.timeout = timeout
 
         try:
-            # self.driver.get("https://demos.laraigo.com/QAOmar/Automatizacion.html")
-            self.driver.get("https://demos.laraigo.com/QAOmar/AutomatizacionTST.html")
+            self.driver.get(PAGE_URL)
         except WebDriverException as e:
             raise WebDriverException(f"No se pudo cargar la página: {e}")
         except Exception as e:

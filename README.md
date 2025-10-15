@@ -34,11 +34,11 @@ Componentes clave:
    - Ambos encapsulan selectores y esperas explícitas, evitando “flakiness”.
 
 - Fixtures y configuración Pytest
-   - `conftest.py`: crea el `WebDriver` según `config/config.py`, define fixtures (`driver`, `wait`, `logger`, `test_data`, `chatbot_page`, etc.), enriquecimiento del reporte y manejo de screenshots en fallos.
+   - `conftest.py` (simplificado): crea el `WebDriver` según `config/config.py` y define sólo fixtures esenciales: `driver`, `wait`, `test_data`. Enriquecimiento mínimo del reporte HTML y screenshot automático en fallos.
    - Marcadores de suite: `@pytest.mark.examples` (entorno simple) y `@pytest.mark.laraigo` (entorno Laraigo).
 
 - Runner y paralelización
-   - `main.py`: ejecuta pytest como subproceso, con `-n <workers>` (xdist). Por diseño, corre en “batches” para pruebas de estrés (loop que genera varios reportes consecutivos).
+   - `main.py`: ejecuta pytest como subproceso con `-n <workers>` (xdist) y repeticiones con `--count` vía `pytest-repeat`, generando un reporte HTML por ejecución.
    - `Makefile`: crea venv, instala dependencias y ejecuta la suite deseada con un solo comando.
 
 - Reportes y logs
@@ -106,6 +106,7 @@ Ejecutar todos los tests del repo (sin marcador):
 Parámetros útiles de `main.py`:
 - `--suite`: `all` | `examples` | `laraigo` (usa marcadores de pytest).
 - `--parallel`: número de procesos en paralelo (por defecto toma `config.PYTEST_WORKERS`).
+- `--count`: número de repeticiones en una sola ejecución (requiere `pytest-repeat`).
 - `-v/-vv/-vvv`: verbosidad.
 
 > Consejo: ajusta `--parallel` según núcleos disponibles. Para estrés, mantén alto; para debugging, usa 1–2.
@@ -131,7 +132,7 @@ Archivo: `config/config.py`
 ```
 chatbot-qa-test/
 ├─ main.py                 # Runner que invoca pytest (paralelo, múltiples batches)
-├─ conftest.py             # Fixtures, WebDriver, reporte, screenshots
+├─ conftest.py             # Fixtures mínimos (driver, wait, test_data), WebDriver y screenshots
 ├─ config/
 │  └─ config.py            # Parámetros de ejecución y entorno
 ├─ pages/
@@ -147,7 +148,7 @@ chatbot-qa-test/
 │  ├─ script.js
 │  └─ style.css
 ├─ utils/
-│  └─ logger.py             # Logger simple con niveles y utilitarios
+│  └─ logger.py             # Utilidades de logging (opcional)
 ├─ assets/style.css         # Estilos extra para reportes pytest-html
 ├─ reports/                 # Reportes HTML generados
 ├─ screenshots/             # Evidencias en caso de fallo
@@ -163,13 +164,13 @@ chatbot-qa-test/
    - `LaraigoPage`: expone un conjunto más amplio de acciones (abrir/cerrar/refresh; manejo de adjuntos: imagen, archivo, audio, video; compartir ubicación; manejo de mensaje de inactividad). Usa `WebDriverWait` extensivo y selectores orientados a la UI de Laraigo (`chat-open-chatweb`, `chat-history-refresh`, etc.).
 
 - Fixtures clave (`conftest.py`)
-   - `driver`: instancia el navegador según `BROWSER_TYPE` + `webdriver-manager`. Aplica waits implícitos y abre `BASE_URL` por test. Cierra al finalizar.
-   - `logger`: entrega `TestLogger` (archivo por ejecución en `logs/`).
+   - `driver`: instancia el navegador según `BROWSER_TYPE` + `webdriver-manager`. Abre `BASE_URL` por test y cierra al finalizar.
+   - `wait`: `WebDriverWait` con `EXPLICIT_WAIT`.
    - `test_data`: helper para adjuntar al reporte HTML datos de cada test (mensaje enviado, respuesta, tiempos, etc.).
-   - Hooks `pytest_runtest_makereport` y `pytest_terminal_summary`: agregan HTML enriquecido y podrían serializar un resumen global.
+   - Hook `pytest_runtest_makereport`: agrega un bloque HTML con los datos y screenshot (si falla), manteniendo el archivo de reporte auto-contenido.
 
 - Runner (`main.py`)
-   - Construye argumentos de pytest, habilita `-n <workers>` (xdist), añade `--html reports/<timestamp>_report.html --self-contained-html` y ejecuta en un bucle para simular carga sostenida y generar múltiples reportes (estrés / estabilidad temporal).
+   - Construye argumentos de pytest, habilita `-n <workers>` (xdist), añade `--count <N>` (si quieres repeticiones en una sola ejecución), y genera un reporte HTML auto-contenido por ejecución en `reports/`.
 
 - Validaciones (tests)
    - Suite “examples”: valida UI y respuestas del chatbot local (saludos, precios, productos/servicios, contacto), incluyendo tiempos de respuesta y flujo multi-mensaje.
@@ -200,14 +201,7 @@ chatbot-qa-test/
 - Soportar otro navegador:
    - Cambiar `BROWSER_TYPE` en `config/config.py` y ejecutar. Los drivers se gestionan automáticamente.
 
-## 12) Consejos de estabilidad y rendimiento
-
-- Mantén los selectores en el POM y evita duplicarlos en tests.
-- Usa `EXPLICIT_WAIT` en vez de dependencias en `time.sleep`.
-- Ajusta `PYTEST_WORKERS` según CPU/RAM. En entornos limitados, baja el valor para evitar timeouts.
-- Si un test es flaky, añade logs/diagnóstico (por ejemplo, loggear el HTML del contenedor de mensajes) y refuerza las condiciones de espera.
-
-## 13) Solución de problemas
+## 12) Solución de problemas
 
 - Error al iniciar el navegador (driver):
    - Verifica conexión a internet (descarga de `webdriver-manager`).
@@ -225,7 +219,7 @@ chatbot-qa-test/
    - Incrementa el parametro timeout en los __init__ del POM.
    - Reduce `--parallel`.
 
-## 14) Créditos y versiones
+## 13) Créditos y versiones
 
 - Python: 3.13.7 (recomendado)
 - Librerías clave:

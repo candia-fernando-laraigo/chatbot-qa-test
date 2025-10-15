@@ -40,9 +40,11 @@ def test_greeting_responses(driver, greeting, test_data):
     # Verificar que el mensaje del usuario se muestra en el chat
     user_messages = page.get_all_user_messages_text()
     assert greeting in user_messages, "El mensaje del usuario no se muestra en el chat"
-    
+
     # Guardar datos para el reporte
-    test_data(sent_message=greeting, response_text=bot_response, response_time=response_time)
+    test_data(
+        sent_message=greeting, response_text=bot_response, response_time=response_time
+    )
 
     # Verificar que la respuesta del bot comienza con "Hola Blanquiazul"
     assert any(
@@ -83,10 +85,12 @@ def test_membership_inquiry_responses(driver, query, test_data):
     # Verificar que el mensaje del usuario se muestra en el chat
     user_messages = page.get_all_user_messages_text()
     assert query in user_messages, "El mensaje del usuario no se muestra en el chat"
-    
+
     # Guardar datos para el reporte
-    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
-    
+    test_data(
+        sent_message=query, response_text=bot_response, response_time=response_time
+    )
+
     # Verificar que la respuesta del bot comienza con "Gracias por contactarte"
     assert any(
         msg_text.startswith("Gracias por contactarte") for msg_text in bot_response
@@ -125,10 +129,12 @@ def test_out_of_scope_responses(driver, query, test_data):
     # Verificar que el mensaje del usuario se muestra en el chat
     user_messages = page.get_all_user_messages_text()
     assert query in user_messages, "El mensaje del usuario no se muestra en el chat"
-    
+
     # Guardar datos para el reporte
-    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
-    
+    test_data(
+        sent_message=query, response_text=bot_response, response_time=response_time
+    )
+
     assert any(
         msg_text.startswith("Lo lamento") for msg_text in bot_response
     ), f"Ninguna de las respuesta del bot comienza con 'Lo lamento' para la consulta: {query}. Respuesta: {bot_response}"

@@ -1,6 +1,6 @@
 """
-Response validation tests for the chatbot interface.
-Tests the accuracy and relevance of chatbot responses.
+Response validation tests for the simple-web demo chatbot.
+Each test creates its own ChatbotPage for clarity and easy extension.
 """
 
 import pytest
@@ -12,25 +12,17 @@ from pages.chatbot_page import ChatbotPage
 @pytest.mark.parametrize(
     "greeting", ["Hola", "Buenos días", "Buenas tardes", "Buenas noches"]
 )
-def test_greeting_responses(driver, chatbot_page, greeting, request, test_data):
-    """TC-RESP-001: Verify that the bot responds appropriately to greetings."""
-
-    # Open chat
-    chatbot_page.open_chat()
-
-    # Send greeting
-    start_time = time.time()
-    chatbot_page.send_message(greeting)
+def test_greeting_responses(driver, greeting, test_data):
+    page = ChatbotPage(driver)
+    page.open_chat()
+    t0 = time.time()
+    page.send_message(greeting)
     assert (
-        greeting in chatbot_page.get_all_user_messages()
+        greeting in page.get_all_user_messages()
     ), "User message not displayed in chat"
-    bot_response = chatbot_page.wait_for_bot_response()
-    response_time = time.time() - start_time
-
-    # Save test data for reporting
-    test_data(sent_message=greeting, response_text=bot_response, response_time=response_time)
-
-    # Verify bot responds with a greeting
+    bot_response = page.wait_for_bot_response()
+    rt = time.time() - t0
+    test_data(sent_message=greeting, response_text=bot_response, response_time=rt)
     assert any(
         word in bot_response.lower()
         for word in ["hola", "bienvenido", "saludos", "ayudar"]
@@ -39,25 +31,15 @@ def test_greeting_responses(driver, chatbot_page, greeting, request, test_data):
 
 @pytest.mark.examples
 @pytest.mark.parametrize("query", ["¿Cuánto cuesta?", "Precios", "Valor del servicio"])
-def test_price_inquiry_responses(driver, chatbot_page, query, request, test_data):
-    """TC-RESP-002: Verify that the bot responds to price inquiries."""
-
-    # Open chat
-    chatbot_page.open_chat()
-
-    # Ask about prices
-    start_time = time.time()
-    chatbot_page.send_message(query)
-    assert (
-        query in chatbot_page.get_all_user_messages()
-    ), "User message not displayed in chat"
-    bot_response = chatbot_page.wait_for_bot_response()
-    response_time = time.time() - start_time
-
-    # Save test data for reporting
-    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
-
-    # Verify bot mentions prices or refers to sales
+def test_price_inquiry_responses(driver, query, test_data):
+    page = ChatbotPage(driver)
+    page.open_chat()
+    t0 = time.time()
+    page.send_message(query)
+    assert query in page.get_all_user_messages(), "User message not displayed in chat"
+    bot_response = page.wait_for_bot_response()
+    rt = time.time() - t0
+    test_data(sent_message=query, response_text=bot_response, response_time=rt)
     assert any(
         word in bot_response.lower()
         for word in ["precio", "costo", "valor", "plan", "paquete", "ventas"]
@@ -72,25 +54,15 @@ def test_price_inquiry_responses(driver, chatbot_page, query, request, test_data
         "Explícame tus productos",
     ],
 )
-def test_product_service_info_responses(driver, chatbot_page, query, request, test_data):
-    """TC-RESP-003: Verify that the bot provides product/service information."""
-
-    # Open chat
-    chatbot_page.open_chat()
-
-    # Ask about products/services
-    start_time = time.time()
-    chatbot_page.send_message(query)
-    assert (
-        query in chatbot_page.get_all_user_messages()
-    ), "User message not displayed in chat"
-    bot_response = chatbot_page.wait_for_bot_response()
-    response_time = time.time() - start_time
-
-    # Save test data for reporting
-    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
-
-    # Verify bot mentions products or services
+def test_product_service_info_responses(driver, query, test_data):
+    page = ChatbotPage(driver)
+    page.open_chat()
+    t0 = time.time()
+    page.send_message(query)
+    assert query in page.get_all_user_messages(), "User message not displayed in chat"
+    bot_response = page.wait_for_bot_response()
+    rt = time.time() - t0
+    test_data(sent_message=query, response_text=bot_response, response_time=rt)
     assert any(
         word in bot_response.lower()
         for word in ["servicio", "producto", "ofrecemos", "plataforma", "solución"]
@@ -106,25 +78,15 @@ def test_product_service_info_responses(driver, chatbot_page, query, request, te
         "¿Tienen un número de teléfono?",
     ],
 )
-def test_contact_info_responses(driver, chatbot_page, query, request, test_data):
-    """TC-RESP-004: Verify that the bot provides contact information when requested."""
-
-    # Open chat
-    chatbot_page.open_chat()
-
-    # Ask about contact information
-    start_time = time.time()
-    chatbot_page.send_message(query)
-    assert (
-        query in chatbot_page.get_all_user_messages()
-    ), "User message not displayed in chat"
-    bot_response = chatbot_page.wait_for_bot_response()
-    response_time = time.time() - start_time
-
-    # Save test data for reporting
-    test_data(sent_message=query, response_text=bot_response, response_time=response_time)
-
-    # Verify bot provides contact information
+def test_contact_info_responses(driver, query, test_data):
+    page = ChatbotPage(driver)
+    page.open_chat()
+    t0 = time.time()
+    page.send_message(query)
+    assert query in page.get_all_user_messages(), "User message not displayed in chat"
+    bot_response = page.wait_for_bot_response()
+    rt = time.time() - t0
+    test_data(sent_message=query, response_text=bot_response, response_time=rt)
     assert any(
         word in bot_response.lower()
         for word in ["contacto", "email", "correo", "teléfono", "llamar", "comunicarse"]
