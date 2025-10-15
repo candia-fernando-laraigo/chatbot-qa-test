@@ -38,6 +38,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "laraigo: mark a test as a Laraigo-specific test"
     )
+    config.addinivalue_line(
+        "markers", "laraigo_ui: mark a test as a Laraigo-UI debug test"
+    )
 
     # Add custom CSS via environment variable which pytest-html will pick up
     css = """
@@ -59,6 +62,7 @@ def driver(request):
 
 TEST_DATA = {}
 test_logger = TestLogger()
+
 
 @pytest.fixture(scope="function")
 def test_data(request):
