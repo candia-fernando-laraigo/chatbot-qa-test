@@ -33,10 +33,16 @@ def main():
     parser.add_argument(
         "--verbose", "-v", action="count", default=0, help="Verbosity level"
     )
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=1,
+        help="Number of times to repeat the test run (default: 1)",
+    )
     args = parser.parse_args()
 
     # Setup basic directories
-    for directory in ["logs", SCREENSHOT_DIR]:
+    for directory in ["logs", "reports", SCREENSHOT_DIR]:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -68,27 +74,21 @@ def main():
     else:
         pytest_args.extend(["-m", args.suite])
 
-    for i in range(10):
-        report_file = f"reports/{timestamp}_report.html"
-        # Prepare command to run pytest directly instead of using pytest.main()
-        cmd_args = (
-            [sys.executable, "-m", "pytest"]
-            + pytest_args
-            + ["--html=" + report_file, "--self-contained-html", "--capture=tee-sys"]
-        )
+    report_file = f"reports/{timestamp}_report.html"
+    cmd_args = (
+        [sys.executable, "-m", "pytest"]
+        + pytest_args
+        + ["--count", str(args.count)]
+        + ["--html=" + report_file, "--self-contained-html", "--capture=tee-sys"]
+    )
 
-        # Log command
-        logger.info(f"Running command: {' '.join(cmd_args)}")
-
-        process = subprocess.run(cmd_args, capture_output=False)
-        exit_code = process.returncode
-
-        if exit_code == 0:
-            logger.info(f"Test Batch {i} completed successfully")
-        else:
-            logger.error(f"Test Batch {i} failed with exit code {exit_code}")
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    logger.info(f"Running command: {' '.join(cmd_args)}")
+    process = subprocess.run(cmd_args, capture_output=False)
+    exit_code = process.returncode
+    if exit_code == 0:
+        logger.info("Test run completed successfully")
+    else:
+        logger.error(f"Test run failed with exit code {exit_code}")
 
 
 if __name__ == "__main__":

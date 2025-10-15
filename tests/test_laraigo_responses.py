@@ -24,6 +24,7 @@ def laraigo_page(driver):
         "Buenas tardes",
         "Hola muy buenos dias",
         "Hola como estas",
+        "Hola",
     ],
 )
 def test_greeting_responses(driver, laraigo_page, greeting, logger, request, test_data):
