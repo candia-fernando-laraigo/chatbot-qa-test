@@ -217,7 +217,7 @@ chatbot-qa-test/
 ```
 </details>
 
-## Detalles de implementación (resumen técnico)
+## Detalles de implementación
 
 ### Page Objects Models (POMs)
 
