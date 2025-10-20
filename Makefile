@@ -5,7 +5,7 @@ PYTHON = python3
 VENV = venv
 REQUIREMENTS = requirements.txt
 
-.PHONY: all setup clean test help
+.PHONY: all clean help report setup test test-examples 
 
 all: setup test
 
@@ -37,14 +37,32 @@ report:
 # Clean up
 clean:
 	@echo "Cleaning up..."
-	@rm -rf $(VENV) __pycache__ .pytest_cache logs/*.log screenshots/*.png report.html
+	@rm -rf $(VENV) __pycache__ .pytest_cache
 	@find . -name "*.pyc" -delete
 	@find . -name "__pycache__" -delete
 
 # Help command
 help:
-	@echo "Available commands:"
-	@echo "  make setup         - Set up the environment"
-	@echo "  make test          - Run all tests"
-	@echo "  make test-examples - Run example tests only"
-	@echo "  make clean         - Clean up the environment"
+	@printf "\nLaraigo Chatbot QA Automation\n"
+	@printf "================================\n"
+	@printf "\nUsage:\n  make <command>\n"
+	@printf "\nCore Commands:\n"
+	@printf "  %-16s %s\n" "setup" "Create/update venv and install requirements"
+	@printf "  %-16s %s\n" "test" "Run default Laraigo suite via main.py"
+	@printf "  %-16s %s\n" "test-examples" "Execute simple-web demo suite"
+	@printf "  %-16s %s\n" "report" "Open the most recent HTML report"
+	@printf "  %-16s %s\n" "clean" "Remove venv, caches, logs, screenshots"
+	@printf "  %-16s %s\n" "help" "Display this command reference"
+	@printf "\nDefault Usage:\n  make\n    - Creates the virtual environment and runs all tests in the laraigo suite\n"
+	@printf "\nCommand Details:\n"
+	@printf "  make setup\n    - Ensures the virtual environment exists\n    - Upgrades pip and installs requirements.txt\n\n"
+	@printf "  make test\n    - Calls main.py with --suite laraigo\n\n"
+	@printf "  make test-examples\n    - Runs the lightweight sandbox against simple-web/ for quick smoke checks\n\n"
+	@printf "  make report\n    - Opens the newest file under reports/*.html (falls back to printing the path)\n\n"
+	@printf "  make clean\n    - Deletes venv, __pycache__, .pytest_cache\n"
+	@printf "\nEnvironment Notes:\n"
+	@printf "  - Default browser: chrome headless (config/config.py)\n"
+	@printf "  - Ensure Chrome/driver download allowed on first run\n"
+	@printf "\nExamples:\n  make\n  make setup\n  make test\n  make report\n\n"
+
+
